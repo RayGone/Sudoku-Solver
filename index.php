@@ -13,9 +13,10 @@
         margin:auto;
         text-align: center;
         text-shadow: 2px 5px 5px black;
-        border:1px solid black;
+        border:1px solid #55D234;
         height: 40px;
         width: 40px;
+
       }
 
       /* .box:hover{
@@ -43,7 +44,7 @@
       </div>
       <div class='row'><hr></div>
       <div>
-
+		<div class='row'><div class='col-sm-12'><p id='error'></p></div></div>
         <div class='row'>
           <div class='col-sm-4'></div>
 
@@ -260,14 +261,30 @@
       }
 
       function callevent(){
-         document.getElementById("input").value = event.key;
-         if(event.key == '0') document.getElementById(selected).innerHTML = '';
-         else document.getElementById(selected).innerHTML = document.getElementById("input").value;
-         var pos = cellIdToArrayPos(selected);
-         updateSudoku_grid(pos[0],pos[1],document.getElementById(selected).innerHTML);//updateSudoku_grid function in solver.js
-         if(!inputSudokuValidator()){
-
-         }
+	  
+		document.getElementById('error').innerHTML = '';
+        document.getElementById("input").value = event.key;
+		console.log(event.key);
+        if(event.key == '0'){
+			document.getElementById(selected).innerHTML = '';
+			var pos = cellIdToArrayPos(selected);
+			var value = Number(document.getElementById(selected).innerHTML);
+			updateSudoku_grid(pos[0],pos[1],0);//updateSudoku_grid function in solver.js
+		}
+        if(event.key.match(/[1-9]/g)){
+			document.getElementById(selected).innerHTML = document.getElementById("input").value;
+			var pos = cellIdToArrayPos(selected);
+			var value = Number(document.getElementById(selected).innerHTML);
+			updateSudoku_grid(pos[0],pos[1],value);//updateSudoku_grid function in solver.js
+			var flag = inputSudokuValidator(pos[0],pos[1],value);
+			if(flag!='success'){
+				document.getElementById(selected).innerHTML ='';
+				document.getElementById('error').innerHTML = flag;
+				updateSudoku_grid(pos[0],pos[1],0);//updateSudoku_grid function in solver.js
+			}
+			console.log("result",flag);
+		}
+		inpputSudokuComplete();
          // console.log(sudoku_grid);//sudoku_grid valu in solver.js
       }
 
