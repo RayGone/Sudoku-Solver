@@ -321,7 +321,7 @@
     </script>
 
     <script>
-      // console.log(getSudoku);
+		solve();
     </script>
   </body>
 </html>
