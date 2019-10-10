@@ -7,6 +7,7 @@
 
 ##### Lists of variables
 1. sudoku grid: a 9*9 matrix
+
 							0-----1-----0-----4-----0-----9-----0-----0-----0
 							|     |     |     |     |     |     |     |     |
 							0-----0-----4-----0-----0-----0-----3-----0-----5
@@ -30,6 +31,7 @@
 4. box_units: it is shown in sudoku below. It is a 3*3 sub matrix
 
 3. peers: for cell (1,1) in the sudoku below, its peers are row 1, column 1 and box 1 because that's where its value effects others and others value effects it
+
 
 						column ->   1	  2     3     4		5     6     7     8     9	 
 
