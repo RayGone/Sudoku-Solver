@@ -1,13 +1,16 @@
 var sudoku_grid = [];
 //initializing sudoku_grid;
-for (var i = 0; i < 9; i++) {
-    sudoku_grid.push([]);
-    // //console.log(sudoku_grid);
-    for (var j = 0; j < 9; j++) {
-        sudoku_grid[i][j] = 0;
+function initializeEmptyGrid() {
+    for (var i = 0; i < 9; i++) {
+        sudoku_grid.push([]);
+        // //console.log(sudoku_grid);
+        for (var j = 0; j < 9; j++) {
+            sudoku_grid[i][j] = 0;
+        }
     }
+    delete i, j;
 }
-delete i, j;
+initializeEmptyGrid();
 //end initializing
 
 var row_unit = [[], [], [], [], [], [], [], [], []]; // groups cells as per column unit, there are 9 columns in 9*9 sudoku, 9*1
@@ -15,8 +18,10 @@ var col_unit = [[], [], [], [], [], [], [], [], []]; // groups cells as per row 
 var box_unit = [[], [], [], [], [], [], [], [], []]; // groups cells as per box unit, each box unit is group of 3*3, there are 9 box unit in 9*9 sudoku
 var peers = [[], [], [], [], [], [], [], [], []]; // contains peers, index to row_unit, col_unit and box_unit for each cell
 var constraint = [[], [], [], [], [], [], [], [], []]; // stores possible choices left for any cell in sudoku
-var visualize = true;
-var debug = false;
+var visualize = false; //if set true displays sudoku during every changes made on console.
+var debug = false;//displays working information of the program, while searching for solution,on the console. like where it is currently, where the change is made in sudoku
+var test_input = false;
+var user_input = false;
 
 var choice_trace = []; // it is a stack that traces the choices made so far. Helps to backtrack
 //form: choice_trace = [{'pos':[i,j],'value':value},......]
@@ -24,10 +29,25 @@ var propagation_trace = []; //corresponds to the choice_trace. keeps track of ef
 //form: propagation_trace = [[{'pos':[i,j],'value':value},......],........]
 // here 'pos' is position of peers and doesn't match 'pos' in choice_trace but 'value' does correspond i.e. is equal
 
-var solution_trace = []; //records the moves that leads to the solution for the purpose of visualization
+var complete_trace = { 'choice_trace': [], 'propagation_trace': [] }; //while choice_trace and propagation trace records only the moves that lead to solution (at the end),
+//complete trace holds all the moves including those that gets erased from choice_trace and propagation_trace during backPropagation() and undoing the changes in sudoku
+//(undo the change when the choice do not lead to solution). Unlike choice_trace and propagation_trace, which are used in algorithm for backPropagation and undoing
+//complete_trace is not used for any purpose inside algorithm other than record all the moves.
+//This can also be taken as a reference for number of steps algorithm took to solve the given instance of sudoku
 
-function getSudoku() {
-    return sudoku_grid;
+function clearPreviousSolution() {
+    initializeEmptyGrid();
+    row_unit = [[], [], [], [], [], [], [], [], []]
+    col_unit = [[], [], [], [], [], [], [], [], []];
+    box_unit = [[], [], [], [], [], [], [], [], []];
+    peers = [[], [], [], [], [], [], [], [], []];
+    constraint = [[], [], [], [], [], [], [], [], []];
+    complete_trace = { 'choice_trace': [], 'propagation_trace': [] };
+    propagation_trace = [];
+    choice_trace = [];
+
+    test_input = false
+    user_input = false
 }
 
 function displayConstraintsForDebug() {
@@ -43,6 +63,8 @@ function displayConstraintsForDebug() {
 
 
 function useDemoInput() {
+    test_input = true;
+    user_input = false;
     sudoku_grid = [];
     sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
     sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
@@ -153,7 +175,7 @@ function initializePeers() {
 }
 
 function initializeConstraint() {
-    constraint
+    //constraint
     // for constraint array, arrayIndex + 1 is the real value that is placed in the sudoku. the value in constraint pointed by index is flag.
     for (var i = 0; i < 9; i++) {
         for (var j = 0; j < 9; j++) {
@@ -190,6 +212,8 @@ function initialPropagation() {
     }
     propagation_trace = [];
     choice_trace = [];
+    complete_trace['choice_trace'] = [];
+    complete_trace['propagation_trace'] = [];
 }
 
 //------ --- ---- ----------  -- ---  ----
@@ -218,6 +242,7 @@ function forwardPropagation(I, J, value) {// I==row, J==column
     if (debug) console.log('forwardPropagation(): for cell[',I,J,"]: ",value);
     // removing value from the constraint of cell(I,J) and pushing it to choice_trace
     choice_trace.push({ 'pos': [I, J], 'value': value });
+    complete_trace['choice_trace'].push({ 'pos': [I, J], 'value': value, 'propagation':'forward' });
     var temp = [];
     for (x in constraint[I][J]) {
         if (constraint[I][J][x] !== value) {
@@ -292,6 +317,7 @@ function forwardPropagation(I, J, value) {// I==row, J==column
     }
     ////console.log('propagationTrace', propagationTrace);
     propagation_trace.push(propagationTrace);
+    complete_trace['propagation_trace'].push(propagationTrace);
 }
 
 function backwardPropagation() {
@@ -299,7 +325,6 @@ function backwardPropagation() {
 
     //------
     var ptrace = propagation_trace.pop();
-    console.log('ptrace', ptrace);
 
     for (var x in ptrace) {
         var traceX = ptrace[x];
@@ -371,22 +396,19 @@ function solutionFinder() {
         } else return true; // possibly solution is found
 
         var status = solutionFinder();
-        if (status) {
-            solution_trace.push()
-            return true; //solution found
-        }
-
+        if (status)  return true; //solution found
 
         //if solution is not found with insert_value undo the changes
         var trace = choice_trace.pop();
         var pos = trace['pos'];
         var value = trace['value'];
-        console.log('inside backwardPropagation....', pos);
+        //console.log('inside backwardPropagation....', pos);
         if (!Array.isArray(pos)) return;
         sudoku_grid[pos[0]][pos[1]] = 0; //emptying the cell
         var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
         constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
         constraint[pos[0]][pos[1]].push(t); // inserting the flag
+        complete_trace['choice_trace'].push({ 'pos': [pos[0], pos[1]], 'value': 0, 'propagation': 'backward' });
 
         backwardPropagation();
         if (visualize) {
@@ -483,21 +505,21 @@ function checkThroughBlock(rowIndex, columnIndex, value) {
 }
 
 function inputSudokuValidator(currentIndexRow, currentIndexColumn, value) {
+    user_input = true;
     var flag;
-  flag = checkThroughBlock(currentIndexRow,currentIndexColumn,value);
-  if(flag.length>0){
-      return "There is already a number " + value + " in " + arrayRowToHTMLid(flag[0])+""+(flag[1]+1);
+    flag = checkThroughBlock(currentIndexRow,currentIndexColumn,value);
+    if(flag.length>0){
+        return "There is already a number " + value + " in " + arrayRowToHTMLid(flag[0])+""+(flag[1]+1);
     }
     flag = checkThroughRow(currentIndexRow, currentIndexColumn, value);
-  if(flag.length>0){
-      return "There is already a number " + value + " in " + arrayRowToHTMLid(currentIndexRow) + "" + (flag[0] + 1);
-  }
+    if(flag.length>0){
+        return "There is already a number " + value + " in " + arrayRowToHTMLid(currentIndexRow) + "" + (flag[0] + 1);
+    }
     flag = checkThroughColumn(currentIndexRow, currentIndexColumn,value);
-  if(flag.length>0){
-      return "There is already a number " + value + " in " +arrayRowToHTMLid(flag[0])+""+(currentIndexColumn+1);
-  }
-
-  return "success";
+    if(flag.length>0){
+        return "There is already a number " + value + " in " +arrayRowToHTMLid(flag[0])+""+(currentIndexColumn+1);
+    }
+    return "success";
 }
 
 function inputSudokuComplete() {
@@ -526,7 +548,6 @@ function validateInput() {
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             if (inputSudokuValidator() !== 'success') return false;
-            if (!flag) break;
         }
     }
 
@@ -552,6 +573,11 @@ function displaySudokuInConsole() {
 }
 
 function solve() {
+    if (!user_input && !test_input) return false
+    if (user_input) {
+        //do some tests first
+        validateInput();
+    }
     initializePeers();
 
     if (debug) console.log("peers initialized: \n", JSON.stringify(peers));
@@ -572,12 +598,14 @@ function solve() {
     }
 
     if (debug) console.log('SolutionFinder is Called: First call');
-    solutionFinder();
-    if(debug) console.log('complete');
+    var status = solutionFinder();
+    if (status) {
+        console.log('complete');
+        return true;
+    }
+    else return false;
 }
 
-useDemoInput();
-solve();
 
 //console.log('gcounter ', g_counter);
 //console.log(JSON.stringify(constraint));
