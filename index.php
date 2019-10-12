@@ -249,6 +249,8 @@
       </div>
     </div>
 
+	<button onclick='solve();'>solve</button>
+
     <script src="scripts/js/getSudoku.js"></script>
     <script src="scripts/js/solver.js"></script>
 
@@ -284,7 +286,7 @@
 			}
 			console.log("result",flag);
 		}
-		inpputSudokuComplete();
+		inputSudokuComplete();
          // console.log(sudoku_grid);//sudoku_grid valu in solver.js
       }
 
@@ -321,7 +323,7 @@
     </script>
 
     <script>
-		solve();
+		//solve();
     </script>
   </body>
 </html>
