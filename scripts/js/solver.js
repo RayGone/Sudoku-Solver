@@ -509,15 +509,15 @@ function inputSudokuValidator(currentIndexRow, currentIndexColumn, value) {
     var flag;
     flag = checkThroughBlock(currentIndexRow,currentIndexColumn,value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " + arrayRowToHTMLid(flag[0])+""+(flag[1]+1);
+        return "There is already a number " + value + " in cell[" +(flag[1]+1)+","+ (flag[0]+1)+"]";
     }
     flag = checkThroughRow(currentIndexRow, currentIndexColumn, value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " + arrayRowToHTMLid(currentIndexRow) + "" + (flag[0] + 1);
+        return "There is already a number " + value + " in cell[" +(flag[0] + 1)  + "," + (currentIndexRow+1)+"]";
     }
     flag = checkThroughColumn(currentIndexRow, currentIndexColumn,value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " +arrayRowToHTMLid(flag[0])+""+(currentIndexColumn+1);
+        return "There is already a number " + value + " in cell[" +(currentIndexColumn+1)+","+(flag[0]+1)+"]";
     }
     return "success";
 }
