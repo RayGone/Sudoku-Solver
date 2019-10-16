@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Seminar I
+    </title>
+    <link rel='stylesheet' href="bootstrap/css/bootstrap.min.css" />
+    <script src='bootstrap/js/bootstrap.min.js'></script>
+</head>
+
+<body style="background-color:black">
+    <div style='padding:10px'>
+      <div class='container-fluid' style="background-color:aliceblue">
+          <div style="padding:5px;background-color:#aaa">
+              <h3 style="text-align:center;text-decoration:underline">Sudoku solving with Constraint Propagation <h2>
+          </div>
+          <div style="padding:10px;">
+            <hr>
+            <div  class='row'>
+                <div class='col-md-4' style='padding:5px'><canvas style='border:3px solid black;padding:10px' id='canvas-ui' width=600 height=500></canvas></div>
+                <div class='col-md-2'></div>
+                <div class='col-md-6'>
+                  <p id='msg' style='display:none' class='alert alert-info'></p>
+                  <p id='error'  style='display:none' class='alert alert-danger'></p>
+                </div>
+            </div>
+          </div>
+              <br />
+              <hr>
+              <hr>
+              <div>
+                  <button id="solve" onclick='solve(); info();'>solve</button>
+                  <button id="test" onclick='sudoku_ui.initializeTestInputs();document.getElementById("clear").style.display="block";'>Use test sudoku</button>
+                  <button id="trace" style="display:none" onclick='DisplayTrace();'>Trace</button>
+                  <div class="alert alert-info" style="display:none" id="info">We found a solution. Click on trace.</div>
+                  <button id="clear" style="display:none" onclick='clearSudoku();'>Clear</button>
+              </div>
+
+              <div style='float:left;width:50px;padding:50px'></div>
+
+      </div>
+    </div>
+            <script src="scripts/js/getSudoku.js"></script>
+            <script src="scripts/js/solver.js"></script>
+            <script src="scripts/js/Sudoku_Canvas_UI.js"></script>
+
+            <script>
+
+                var selected = '';
+                function putInput() {
+                    console.log('i was called', "value is " + document.getElementById("input").value);
+                    document.getElementById(selected).innerHTML = document.getElementById("input").value;
+                }
+
+                function callevent() {
+
+                    document.getElementById('error').innerHTML = '';
+                    document.getElementById("input").value = event.key;
+                    console.log(event.key);
+                    if (event.key == '0') {
+                        document.getElementById(selected).innerHTML = '';
+                        var pos = cellIdToArrayPos(selected);
+                        var value = Number(document.getElementById(selected).innerHTML);
+                        updateSudoku_grid(pos[0], pos[1], 0);//updateSudoku_grid function in solver.js
+                    }
+                    if (event.key.match(/[1-9]/g)) {
+                        document.getElementById(selected).innerHTML = document.getElementById("input").value;
+                        var pos = cellIdToArrayPos(selected);
+                        var value = Number(document.getElementById(selected).innerHTML);
+                        updateSudoku_grid(pos[0], pos[1], value);//updateSudoku_grid function in solver.js
+                        var flag = inputSudokuValidator(pos[0], pos[1], value);
+                        if (flag != 'success') {
+                            document.getElementById(selected).innerHTML = '';
+                            document.getElementById('error').innerHTML = flag;
+                            updateSudoku_grid(pos[0], pos[1], 0);//updateSudoku_grid function in solver.js
+                        }
+                        console.log("result", flag);
+                    }
+                    inputSudokuComplete();
+                    // console.log(sudoku_grid);//sudoku_grid valu in solver.js
+                }
+
+                var boxes = document.getElementsByClassName("box");
+                for (var i = 0; i < boxes.length; i++) {
+                    boxes[i].addEventListener("click", function () {
+                        console.log("i was called", this.id);
+                        // console.log(cellIdToArrayPos(this.id));
+                        document.getElementById('notice').style.display = 'block';
+                        document.getElementById('input').value = '';
+                        document.getElementById('input').focus();
+                        document.getElementById('bid').innerHTML = this.id;
+                        selected = this.id;
+                    });
+                }
+
+                function cellIdToArrayPos(id) {
+                    var arr = id.split("");
+                    switch (arr[0]) {
+                        case 'A': arr[0] = 0; break;
+                        case 'B': arr[0] = 1; break;
+                        case 'C': arr[0] = 2; break;
+                        case 'D': arr[0] = 3; break;
+                        case 'E': arr[0] = 4; break;
+                        case 'F': arr[0] = 5; break;
+                        case 'G': arr[0] = 6; break;
+                        case 'H': arr[0] = 7; break;
+                        case 'I': arr[0] = 8; break;
+                        default: break;
+                    }
+                    arr[1] = arr[1] - 1;
+                    return arr;
+                }
+            </script>
+
+            <script>
+
+                function clearSudoku() {
+
+                    clearInterval(trace_id);
+                    document.getElementById('trace').style.display = 'none'
+                    document.getElementById('clear').style.display = 'none'
+
+                    document.getElementById('info').style.display = 'none';
+                    clearPreviousSolution()
+                    for (i = 0; i < 9; i++) {
+                        for (j = 0; j < 9; j++) {
+                            var pos = arrayPosToHTMLid(i, j);
+                            var id = document.getElementById(pos);
+                            id.innerHTML = '';
+                            id.style.background = ''
+                        }
+                    }
+                }
+
+
+                var trace_counter = 0;
+                var trace_id = '';
+                function DisplayTrace() {
+                    trace_counter = 0;
+                    trace_id = setInterval(function () {
+                        if (trace_counter < complete_trace['choice_trace'].length) {
+                            var step = complete_trace['choice_trace'][trace_counter];
+                            var pos = arrayPosToHTMLid(step['pos'][0], step['pos'][1])
+                            var value = step['value']
+                            var id = document.getElementById(pos)
+                            if (step['propagation'] === 'forward') {
+                                id.innerHTML = value
+                                id.style.background = '#55D234'
+                            } else {
+                                id.style.background = '#D25534'
+                                id.innerHTML = '';
+                            }
+                        }
+                        else {
+                            clearInterval(trace_id);
+                            console.log('DisplayTrace exited')
+                        }
+                        trace_counter++;
+                    },
+                        200);
+                }
+
+                function info() {
+                    document.getElementById("trace").style.display = "block";
+                    document.getElementById('info').style.display = 'block';
+                }
+            </script>
+
+            <script>
+                                                //canvas section
+
+            </script>
+</body>
+</html>
