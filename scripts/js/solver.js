@@ -1,4 +1,9 @@
+  /*--------------------------*/
+ /*------solver.js-----------*/
+/*--------------------------*/
+
 var sudoku_grid = [];
+var input_sudoku = []; //its is just a copy of sudoku_grid before solve() is called.
 //initializing sudoku_grid;
 function initializeEmptyGrid() {
     for (var i = 0; i < 9; i++) {
@@ -78,25 +83,25 @@ function useDemoInput() {
     displaySudokuInConsole();
 }
 
-function displaySudokuInConsole() {
-    var string = '';
-    for (i = 0; i < 9; i++) {
-        for (j = 0; j < 9; j++) {
-            if (sudoku_grid[i][j] === 0) string += '*';
-            else string += sudoku_grid[i][j];
-            if (j < 8) string += '-----'
-        }
-        //console.log(string);
-
-        if (i < 8) {
-            string += "\n|     |     |     |     |     |     |     |     |";
-            //console.log(string);
-        }
-        string += '\n';
-    }
-
-    console.log(string);
-}
+// function displaySudokuInConsole(matrix) {
+//     var string = '';
+//     for (i = 0; i < 9; i++) {
+//         for (j = 0; j < 9; j++) {
+//             if (matrix[i][j] === 0) string += '*';
+//             else string += matrix[i][j];
+//             if (j < 8) string += '-----'
+//         }
+//         //console.log(string);
+//
+//         if (i < 8) {
+//             string += "\n|     |     |     |     |     |     |     |     |";
+//             //console.log(string);
+//         }
+//         string += '\n';
+//     }
+//
+//     console.log(string);
+// }
 
 function initialzeUnits() {
     //initializing row_units and column_units and box_units
@@ -509,15 +514,15 @@ function inputSudokuValidator(currentIndexRow, currentIndexColumn, value) {
     var flag;
     flag = checkThroughBlock(currentIndexRow,currentIndexColumn,value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " + arrayRowToHTMLid(flag[0])+""+(flag[1]+1);
+        return "There is already a number " + value + " in cell[" +(flag[1]+1)+","+ (flag[0]+1)+"]";
     }
     flag = checkThroughRow(currentIndexRow, currentIndexColumn, value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " + arrayRowToHTMLid(currentIndexRow) + "" + (flag[0] + 1);
+        return "There is already a number " + value + " in cell[" +(flag[0] + 1)  + "," + (currentIndexRow+1)+"]";
     }
     flag = checkThroughColumn(currentIndexRow, currentIndexColumn,value);
     if(flag.length>0){
-        return "There is already a number " + value + " in " +arrayRowToHTMLid(flag[0])+""+(currentIndexColumn+1);
+        return "There is already a number " + value + " in cell[" +(currentIndexColumn+1)+","+(flag[0]+1)+"]";
     }
     return "success";
 }
@@ -536,21 +541,26 @@ function inputSudokuComplete() {
     }
     temp = [... new Set(temp)];
     unique = temp.length;
+    console.log(count,unique,temp);
     if (count >= 17 && unique >= 8) {
         return true;
-        //console.log(count,unique,temp);
     }
     return false;
 }
 
 function validateInput() {
+    // console.log('inside validate input')
     var i, j;
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
-            if (inputSudokuValidator() !== 'success') return false;
+            if(sudoku_grid[i][j]!=0){
+              var stat = inputSudokuValidator(i,j,sudoku_grid[i][j]);
+              // console.log(stat)
+              if (stat !== 'success') return false;
+            }
         }
     }
-
+    // console.log('half of the validation is complete');
     return inputSudokuComplete();
 }
 
@@ -572,12 +582,24 @@ function displaySudokuInConsole() {
     console.log(string)
 }
 
+function copyToInput(){
+  for(x in sudoku_grid){
+    var temp = [];
+    for(y in sudoku_grid[x]){
+      temp.push(sudoku_grid[x][y]);
+    }
+    input_sudoku.push(temp);
+  }
+}
+
 function solve() {
     if (!user_input && !test_input) return false
     if (user_input) {
         //do some tests first
-        validateInput();
+        if(!validateInput()) return false
     }
+
+    copyToInput();
     initializePeers();
 
     if (debug) console.log("peers initialized: \n", JSON.stringify(peers));
@@ -601,6 +623,7 @@ function solve() {
     var status = solutionFinder();
     if (status) {
         console.log('complete');
+        displaySudokuInConsole();
         return true;
     }
     else return false;

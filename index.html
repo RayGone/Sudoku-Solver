@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Seminar I
+    </title>
+    <link rel='stylesheet' href="bootstrap/css/bootstrap.min.css" />
+    <link rel='stylesheet' href="css/custom_buttons.css" />
+    <script src='bootstrap/js/bootstrap.min.js'></script>
+    <style>
+      h3{
+        text-align:center;text-decoration:underline;color:white;text-shadow:3px 3px 3px #303030;
+        /* background:linear-gradient(to right, gold,silver);
+        -webkit-background-clip: text;
+	       -webkit-text-fill-color: transparent; */
+      }
+      hr{
+        box-shadow:2px 2px 5px 5px #aaaaaa;
+      }
+
+      .hide{
+        display:none;
+      }
+    </style>
+</head>
+
+<body style="background-color:black">
+    <div style='padding:10px'>
+      <div class='container-fluid' style="background-color:aliceblue;">
+          <div style="padding:5px;background-image: linear-gradient(to right, #aaa , #333, #aaa, #333,#333, #aaa,#333, #aaa);box-shadow:4px 4px 4px #505050">
+              <h3>Sudoku Solving With Constraint Propagation <h2>
+          </div>
+          <div>
+            <hr>
+            <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
+                <div class='col-md-4' style='background-color:#555555;padding:5px'><canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas></div>
+                <div class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
+                    <div class='butn hide' id='userInput'>validate Input</div>
+                    <div class='butn' id='test'>use demo input</div>
+                    <div class='butn' id='clear'>Clear</div>
+                    <div class='butn hide' id='solve'>Solve</div>
+                    <div class='butn hide' id='trace'>Trace Solution Stack</div>
+                      <!-- <button id="test" onclick=''>Use test sudoku</button><br><br>
+                      <button id="solve" onclick='solve(); info();'>solve</button><br><br>
+                      <button id="trace" style="display:none" onclick='DisplayTrace();'>Trace</button>
+                      <div class="alert alert-info" style="display:none" id="info">We found a solution. Click on trace.</div> -->
+                </div>
+                <div class='col-md-6' style='background-color:#888888;'>
+                  <p id='msg' style='display:none' class='alert alert-info'></p>
+                  <p id='error'  style='display:none' class='alert alert-danger'></p>
+                </div>
+            </div>
+          </div>
+              <br />
+              <div style='float:left;width:50px;padding:50px'></div>
+
+      </div>
+    </div>
+            <script src="scripts/js/getSudoku.js"></script>
+            <script src="scripts/js/solver.js"></script>
+            <script src="scripts/js/Sudoku_Canvas_UI.js"></script>
+
+            <script>
+
+                var selected = '';
+                function putInput() {
+                    console.log('i was called', "value is " + document.getElementById("input").value);
+                    document.getElementById(selected).innerHTML = document.getElementById("input").value;
+                }
+
+                function callevent() {
+
+                    document.getElementById('error').innerHTML = '';
+                    document.getElementById("input").value = event.key;
+                    console.log(event.key);
+                    if (event.key == '0') {
+                        document.getElementById(selected).innerHTML = '';
+                        var pos = cellIdToArrayPos(selected);
+                        var value = Number(document.getElementById(selected).innerHTML);
+                        updateSudoku_grid(pos[0], pos[1], 0);//updateSudoku_grid function in solver.js
+                    }
+                    if (event.key.match(/[1-9]/g)) {
+                        document.getElementById(selected).innerHTML = document.getElementById("input").value;
+                        var pos = cellIdToArrayPos(selected);
+                        var value = Number(document.getElementById(selected).innerHTML);
+                        updateSudoku_grid(pos[0], pos[1], value);//updateSudoku_grid function in solver.js
+                        var flag = inputSudokuValidator(pos[0], pos[1], value);
+                        if (flag != 'success') {
+                            document.getElementById(selected).innerHTML = '';
+                            document.getElementById('error').innerHTML = flag;
+                            updateSudoku_grid(pos[0], pos[1], 0);//updateSudoku_grid function in solver.js
+                        }
+                        console.log("result", flag);
+                    }
+                    inputSudokuComplete();
+                    // console.log(sudoku_grid);//sudoku_grid valu in solver.js
+                }
+
+                var boxes = document.getElementsByClassName("box");
+                for (var i = 0; i < boxes.length; i++) {
+                    boxes[i].addEventListener("click", function () {
+                        console.log("i was called", this.id);
+                        // console.log(cellIdToArrayPos(this.id));
+                        document.getElementById('notice').style.display = 'block';
+                        document.getElementById('input').value = '';
+                        document.getElementById('input').focus();
+                        document.getElementById('bid').innerHTML = this.id;
+                        selected = this.id;
+                    });
+                }
+
+                function cellIdToArrayPos(id) {
+                    var arr = id.split("");
+                    switch (arr[0]) {
+                        case 'A': arr[0] = 0; break;
+                        case 'B': arr[0] = 1; break;
+                        case 'C': arr[0] = 2; break;
+                        case 'D': arr[0] = 3; break;
+                        case 'E': arr[0] = 4; break;
+                        case 'F': arr[0] = 5; break;
+                        case 'G': arr[0] = 6; break;
+                        case 'H': arr[0] = 7; break;
+                        case 'I': arr[0] = 8; break;
+                        default: break;
+                    }
+                    arr[1] = arr[1] - 1;
+                    return arr;
+                }
+            </script>
+
+            <script>
+                    document.getElementById('test').addEventListener('click',function(){
+                      document.getElementById('clear').click();
+                      sudoku_ui.initializeTestInputs();
+                      document.getElementById('solve').classList.remove('hide');
+                      document.getElementById('userInput').classList.add('hide');
+                    });
+
+                    document.getElementById('clear').addEventListener('click',function() {
+                      sudoku_ui.clearCurrentSudoku();
+                      document.getElementById('solve').classList.add('hide');
+                      document.getElementById('userInput').classList.add('hide');
+                      document.getElementById('trace').classList.add('hide');
+                    });
+
+                    document.getElementById('solve').addEventListener('click',function(){
+                      if(solve()){
+                         document.getElementById('msg').innerHTML = "A Solution is found.";
+                         document.getElementById('msg').style.display = '';
+                         document.getElementById('trace').classList.remove('hide');
+                         document.getElementById('solve').classList.add('hide');
+                      }
+                      sudoku_ui.writeSolutionOnBoard();
+                    });
+
+                    document.getElementById('userInput').addEventListener('click',function(){
+                          //do some tests first
+                          if(!validateInput()){
+                            document.getElementById('error').innerHTML = 'Input Sudoku is not complete!!!!';
+                            document.getElementById('msg').innerHTML = 'The Input Should have 8 distinct digits and minimum 17 inputs for the sudoku to have unique solution.';
+                            document.getElementById('error').style.display = document.getElementById('msg').style.display= '';
+                          } else {
+                            document.getElementById('msg').innerHTML = 'The Input is validated. You can now click on Solve to get a solution';
+                            document.getElementById('msg').style.display= '';
+                            document.getElementById('solve').classList.remove('hide');
+                            document.getElementById('userInput').classList.add('hide');
+                          }
+                    });
+
+                    document.getElementById('trace').addEventListener('click',function(){
+                      sudoku_ui.writeInputOnBoard(input_sudoku);
+                      solutionTraceAnimation();
+                    });
+
+                    var trace_counter = 0;
+                    var trace_id = '';
+                    function DisplayTrace() {
+                        trace_counter = 0;
+                        trace_id = setInterval(function () {
+                            if (trace_counter < complete_trace['choice_trace'].length) {
+                                var step = complete_trace['choice_trace'][trace_counter];
+                                var pos = arrayPosToHTMLid(step['pos'][0], step['pos'][1])
+                                var value = step['value']
+                                var id = document.getElementById(pos)
+                                if (step['propagation'] === 'forward') {
+                                    id.innerHTML = value
+                                    id.style.background = '#55D234'
+                                } else {
+                                    id.style.background = '#D25534'
+                                    id.innerHTML = '';
+                                }
+                            }
+                            else {
+                                clearInterval(trace_id);
+                                console.log('DisplayTrace exited')
+                            }
+                            trace_counter++;
+                        },
+                            200);
+                    }
+            </script>
+</body>
+</html>
