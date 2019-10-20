@@ -1,0 +1,36 @@
+/* button main */
+.butn{
+  border-style: outset;
+  background-image: radial-gradient(#c0c0c0, white);
+  min-height: 10px;
+  min-width: 10px;
+  text-align: center;
+  padding:5px;
+  cursor:default;
+  font-weight: bold;
+  text-transform: capitalize;
+  /* Disabling text selection on buttion */
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none;
+/* ------------- */
+}
+
+.butn:hover{
+  background-image: radial-gradient(white,#c0c0c0);
+  text-shadow: 2px 2px 2px #909090;
+  font-weight: bold;
+  font-size: 1.01em;
+}
+
+.butn:active{
+    border-style: inset;
+    font-size: 1em;
+}
+
+.round{
+  border-radius: 20px;
+}
