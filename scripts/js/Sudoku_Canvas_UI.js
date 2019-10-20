@@ -358,7 +358,18 @@ solutionTraceBackward = function(){
             j = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
             fontsize = Math.floor(sudoku_ui.cell_size/2)
           } else {
+              //direct commits
+              sudoku_ui.ctx.fillStyle = '#b30000'
+              sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+              i = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+              j = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+              fontsize = Math.floor(sudoku_ui.cell_size/2)
+              sudoku_ui.ctx.font = (fontsize/2)+"px Verdana";
+              // Fill with gradient
+              sudoku_ui.ctx.fillStyle = 'white';
+              sudoku_ui.ctx.fillText('bc0', i, j-5);
               clearInterval(solutionTraceAnimation_interval_id);
+              //------
               solutionTraceAnimation_interval_id = setInterval(solutionTraceForward,200);
           }
       },150);
