@@ -13,6 +13,10 @@ UI = function() {
     this.I = 0
     this.J = 0
     this.clicked = false
+
+    this.cell_with_number_clicked = false;
+    this.cell_with_number_I = 0;
+    this.cell_with_number_J = 0;
 }
 
 
@@ -46,8 +50,8 @@ UI.prototype.Initialize = function (canvas_id) {
       }
       posJ = Math.abs(Math.floor((coords.y-13)/sudoku_ui.cell_size))
       posI = Math.abs(Math.floor((coords.x-13)/sudoku_ui.cell_size))
-      sudoku_ui.I = posI
-      sudoku_ui.J = posJ
+      sudoku_ui.I = posJ
+      sudoku_ui.J = posI
       sudoku_ui.clicked = true
 
       var grd = sudoku_ui.ctx.createLinearGradient(0, 0, 50, 0);
@@ -55,20 +59,26 @@ UI.prototype.Initialize = function (canvas_id) {
       grd.addColorStop(1, "#00ff00");
 
       sudoku_ui.ctx.fillStyle = grd
-      sudoku_ui.ctx.fillRect((sudoku_ui.I*sudoku_ui.cell_size)+4,(sudoku_ui.J*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+      // sudoku_ui.I corresponds to Y co-ordinate and sudoku_ui.J to X co-ordinate
+      sudoku_ui.ctx.fillRect((sudoku_ui.J*sudoku_ui.cell_size)+4,(sudoku_ui.I*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
       document.getElementById('msg').innerHTML = 'Waiting For Input.';
       document.getElementById('msg').style.display = 'block'
       document.getElementById('userInput').classList.remove('hide');
-      console.log('click event inside sudoku , ',posI,posJ," co-ords: ",coords.y,coords.x)
+      console.log('click event inside sudoku , ',sudoku_ui.I,sudoku_ui.J," co-ords: ",coords.x,coords.y)
+
       if(sudoku_grid[sudoku_ui.I][sudoku_ui.J]!=0){
-        i = sudoku_ui.I * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
-        j = sudoku_ui.J * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+        X = sudoku_ui.J * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+        Y = sudoku_ui.I * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
         fontsize = Math.floor(sudoku_ui.cell_size/2)
         sudoku_ui.ctx.font = fontsize+"px Verdana";
 
         // Fill with gradient
         sudoku_ui.ctx.fillStyle = 'red';
-        sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.I][sudoku_ui.J], i+2, j);
+        sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.I][sudoku_ui.J], X+2, Y);
+
+        sudoku_ui.cell_with_number_clicked = true;
+        sudoku_ui.cell_with_number_I = sudoku_ui.I
+        sudoku_ui.cell_with_number_J = sudoku_ui.J
       }
     });
     //---
@@ -108,6 +118,7 @@ UI.prototype.mouseClick = function(evt,sudoku_ui){//mouseClick is in global name
 
 UI.prototype.putNumber = function(k){
   if(!this.clicked)   return
+  this.cell_with_number_clicked = false;
 
   console.log(k)
   zero = false
@@ -130,7 +141,7 @@ UI.prototype.putNumber = function(k){
     document.getElementById('error').style.display = 'block';
     document.getElementById('msg').style.display = 'none';
     this.ctx.fillStyle = 'red'
-    this.ctx.fillRect((this.I*this.cell_size)+4,(this.J*this.cell_size)+4,this.cell_size-6,this.cell_size-7)
+    this.ctx.fillRect((this.J*this.cell_size)+4,(this.I*this.cell_size)+4,this.cell_size-6,this.cell_size-7)
     return
   }
   document.getElementById('error').style.display = 'none';
@@ -145,16 +156,16 @@ UI.prototype.putNumber = function(k){
     this.ctx.fillStyle = 'white'
     document.getElementById('msg').innerHTML = 'Input is cleared on the selected cell.'
   }
-  this.ctx.fillRect((this.I*this.cell_size)+4,(this.J*this.cell_size)+4,this.cell_size-6,this.cell_size-7)
-  i = this.I * this.cell_size + Math.floor(this.cell_size/2) - Math.floor(this.cell_size/5)
-  j = this.J * this.cell_size + Math.floor(this.cell_size/2) + Math.floor(this.cell_size/4)
-  console.log('\n Inside putNumber: ',i,j)
+  this.ctx.fillRect((this.J*this.cell_size)+4,(this.I*this.cell_size)+4,this.cell_size-6,this.cell_size-7)
+  X = this.J * this.cell_size + Math.floor(this.cell_size/2) - Math.floor(this.cell_size/5)
+  Y = this.I * this.cell_size + Math.floor(this.cell_size/2) + Math.floor(this.cell_size/4)
+  console.log('\n Inside putNumber: ',X,Y)
   fontsize = Math.floor(this.cell_size/2)
   this.ctx.font = fontsize+"px Verdana";
 
   // Fill with gradient
   this.ctx.fillStyle = 'green';
-  this.ctx.fillText(k, i+2, j);
+  this.ctx.fillText(k, X+2, Y);
   this.ctx.restore()
   if(k!='') document.getElementById('msg').innerHTML = 'Number '+k+' is placed on cell['+(this.I+1)+","+(this.J+1)+"]";
   else{ if(!zero)document.getElementById('msg').innerHTML = 'Please Press Number Keys only!!<br> Inserting non-digit key clears input in selected cell.'; }
@@ -427,9 +438,25 @@ document.getElementsByTagName('body')[0].addEventListener("click",function(){
     document.getElementById('error').style.display = 'none'
     sudoku_ui.clicked = false //
     sudoku_ui.ctx.fillStyle = 'white'
+
+    if(sudoku_ui.cell_with_number_clicked){
+      sudoku_ui.ctx.fillStyle = 'gold'
+      // sudoku_ui.I corresponds to Y co-ordinate and sudoku_ui.J to X co-ordinate
+      sudoku_ui.ctx.fillRect((sudoku_ui.cell_with_number_J*sudoku_ui.cell_size)+4,(sudoku_ui.cell_with_number_I*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+
+      X = sudoku_ui.cell_with_number_J * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+      Y = sudoku_ui.cell_with_number_I * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+      fontsize = Math.floor(sudoku_ui.cell_size/2)
+      sudoku_ui.ctx.font = fontsize+"px Verdana";
+
+      sudoku_ui.ctx.fillStyle = 'green';
+      sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.cell_with_number_I][sudoku_ui.cell_with_number_J], X+2, Y);
+      sudoku_ui.cell_with_number_clicked = false;
+    }
+
     if(!sudoku_grid[sudoku_ui.I][sudoku_ui.J]){
       sudoku_ui.ctx.fillStyle = 'white'
-      sudoku_ui.ctx.fillRect((sudoku_ui.I*sudoku_ui.cell_size)+4,(sudoku_ui.J*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-5,sudoku_ui.cell_size-6)
+      sudoku_ui.ctx.fillRect((sudoku_ui.J*sudoku_ui.cell_size)+4,(sudoku_ui.I*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-5,sudoku_ui.cell_size-6)
       document.getElementById('msg').innerHTML = '';
     } else {
       sudoku_ui.putNumber(sudoku_grid[sudoku_ui.I][sudoku_ui.J]);
