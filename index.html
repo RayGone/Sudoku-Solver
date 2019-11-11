@@ -21,6 +21,66 @@
       .hide{
         display:none;
       }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 17px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #2196F3;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 12px;
+        width: 12px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+
+      input:checked + .slider {
+        background-color: green;
+      }
+
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+
+      input:checked + .slider:before {
+        -webkit-transform: translateX(12px);
+        -ms-transform: translateX(12px);
+        transform: translateX(12px);
+      }
+
+      /* Rounded sliders */
+      .slider.round {
+        border-radius: 17px;
+      }
+
+      .slider.round:before {
+        border-radius: 50%;
+      }
     </style>
 </head>
 
@@ -32,11 +92,30 @@
           </div>
           <div>
             <hr>
+            <label class="switch">
+              <input type="checkbox" onchange='dothisRandomize(this)'>
+              <span class="slider round"></span>
+            </label>
+            &nbsp;&nbsp;<span id='randomize-toggle' style='padding-right:10px;border-right:solid 1px black;border-top:solid 1px black'>Randomization <b>Off</b></span>
+            <label class="switch">
+              <input type="checkbox" onchange='dothisRB(this)'>
+              <span class="slider round"></span>
+            </label>
+            &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>Row-block Interaction <b>Off</b></span>
             <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
                 <div class='col-md-4' style='background-color:#555555;padding:5px'><canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas></div>
                 <div class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
                     <div class='butn hide' id='userInput'>validate Input</div>
                     <div class='butn' id='test'>use demo input</div>
+                    <div id='demo-list' class='hide'>
+                      <div class='butn' onclick='initializeDemo(1)'>Demo 1</div>
+                      <div class='butn' onclick='initializeDemo(2)'>Demo 2</div>
+                      <div class='butn' onclick='initializeDemo(3)'>Demo 3</div>
+                      <div class='butn' onclick='initializeDemo(4)'>Demo 4</div>
+                      <div class='butn' onclick='initializeDemo(5)'>Demo 5</div>
+                      <div class='butn' onclick='initializeDemo(6)'>Demo 6</div>
+                      <div class='butn' onclick='initializeDemo(7)'>Demo 7</div>
+                    </div>
                     <div class='butn' id='clear'>Clear</div>
                     <div class='butn hide' id='solve'>Solve</div>
                     <div class='butn hide' id='trace'>Trace Solution Stack</div>
@@ -131,13 +210,21 @@
             <script>
                     document.getElementById('test').addEventListener('click',function(){
                       document.getElementById('clear').click();
-                      sudoku_ui.initializeTestInputs();
+                      document.getElementById('demo-list').classList.remove('hide')
+                      this.classList.add('hide')
+                    });
+
+                    function initializeDemo(demo){
+                      sudoku_ui.initializeTestInputs(demo);
                       document.getElementById('solve').classList.remove('hide');
                       document.getElementById('userInput').classList.add('hide');
-                    });
+                      document.getElementById('demo-list').classList.add('hide')
+                      document.getElementById('test').classList.remove('hide')
+                    }
 
                     document.getElementById('clear').addEventListener('click',function() {
                       sudoku_ui.clearCurrentSudoku();
+                      document.getElementById('demo-list').classList.add('hide')
                       document.getElementById('solve').classList.add('hide');
                       document.getElementById('userInput').classList.add('hide');
                       document.getElementById('trace').classList.add('hide');
@@ -145,7 +232,7 @@
 
                     document.getElementById('solve').addEventListener('click',function(){
                       if(solve()){
-                         document.getElementById('msg').innerHTML = "A Solution is found.";
+                         document.getElementById('msg').innerHTML = "A Solution is found.<br>Total Steps to Solution: "+steps_counter+"<br>No.of backtracks: "+backtrack_counter;
                          document.getElementById('msg').style.display = '';
                          document.getElementById('trace').classList.remove('hide');
                          document.getElementById('solve').classList.add('hide');
@@ -197,6 +284,28 @@
                             trace_counter++;
                         },
                             200);
+                    }
+
+                    function dothisRandomize(checkbox){
+                      if(checkbox.checked){
+                        random = true;
+                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>On</b>';
+                      } else {
+                        random = false;
+                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>Off</b>';
+                      }
+                      console.log(random)
+                    }
+
+                    function dothisRB(checkbox){
+                      if(checkbox.checked){
+                        row_block_interaction = true;
+                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>On</b>';
+                      } else {
+                        row_block_interaction = false;
+                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>Off</b>';
+                      }
+                      console.log(row_block_interaction)
                     }
             </script>
 </body>

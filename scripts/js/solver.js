@@ -1,7 +1,8 @@
   /*--------------------------*/
  /*------solver.js-----------*/
 /*--------------------------*/
-
+var random = false;
+var row_block_interaction = false;
 var sudoku_grid = [];
 var input_sudoku = []; //its is just a copy of sudoku_grid before solve() is called.
 //initializing sudoku_grid;
@@ -24,7 +25,7 @@ var box_unit = [[], [], [], [], [], [], [], [], []]; // groups cells as per box 
 var peers = [[], [], [], [], [], [], [], [], []]; // contains peers, index to row_unit, col_unit and box_unit for each cell
 var constraint = [[], [], [], [], [], [], [], [], []]; // stores possible choices left for any cell in sudoku
 var visualize = false; //if set true displays sudoku during every changes made on console.
-var debug = false;//displays working information of the program, while searching for solution,on the console. like where it is currently, where the change is made in sudoku
+var debug = true;//displays working information of the program, while searching for solution,on the console. like where it is currently, where the change is made in sudoku
 var test_input = false;
 var user_input = false;
 
@@ -39,6 +40,8 @@ var complete_trace = { 'choice_trace': [], 'propagation_trace': [] }; //while ch
 //(undo the change when the choice do not lead to solution). Unlike choice_trace and propagation_trace, which are used in algorithm for backPropagation and undoing
 //complete_trace is not used for any purpose inside algorithm other than record all the moves.
 //This can also be taken as a reference for number of steps algorithm took to solve the given instance of sudoku
+var steps_counter;
+var backtrack_counter;
 
 function clearPreviousSolution() {
     initializeEmptyGrid();
@@ -48,7 +51,9 @@ function clearPreviousSolution() {
     peers = [[], [], [], [], [], [], [], [], []];
     constraint = [[], [], [], [], [], [], [], [], []];
     complete_trace = { 'choice_trace': [], 'propagation_trace': [] };
+    // console.log(complete_trace);
     propagation_trace = [];
+    // console.log(propagation_trace);
     choice_trace = [];
 
     test_input = false
@@ -67,19 +72,90 @@ function displayConstraintsForDebug() {
 }
 
 
-function useDemoInput() {
+function useDemoInput(number) {
     test_input = true;
     user_input = false;
     sudoku_grid = [];
-    sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
-    sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
-    sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
-    sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
-    sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-    sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
-    sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
-    sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
-    sudoku_grid.push([0, 0, 0, 0, 0, 6, 0, 9, 0]);
+
+    switch(number){
+      case 1:
+        sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
+        sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
+        sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
+        sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
+        sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
+        sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
+        sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
+        sudoku_grid.push([0, 0, 0, 7, 0, 6, 0, 9, 0]);
+        break;
+      case 2:
+        sudoku_grid.push([0,3,0,4,8,0,6,0,9]);
+        sudoku_grid.push([0,0,0,0,2,7,0,0,0]);
+        sudoku_grid.push([8,0,0,3,0,0,0,0,0]);
+        sudoku_grid.push([0,1,9,0,0,0,0,0,0]);
+        sudoku_grid.push([7,8,0,0,0,2,0,9,3]);
+        sudoku_grid.push([0,0,0,0,0,4,8,7,0]);
+        sudoku_grid.push([0,0,0,0,0,5,0,0,6]);
+        sudoku_grid.push([0,0,0,1,3,0,0,0,0]);
+        sudoku_grid.push([9,0,2,0,4,8,0,1,0]);
+        break;
+      case 3:
+        sudoku_grid.push([0,0,0,0,0,0,8,0,2]);
+        sudoku_grid.push([0,0,4,9,0,0,5,6,0]);
+        sudoku_grid.push([0,0,0,7,2,0,0,0,9]);
+        sudoku_grid.push([3,6,0,0,0,1,0,0,0]);
+        sudoku_grid.push([0,8,7,0,4,0,6,5,0]);
+        sudoku_grid.push([0,0,0,2,0,0,0,7,8]);
+        sudoku_grid.push([5,0,0,0,1,8,0,0,0]);
+        sudoku_grid.push([0,1,8,0,0,7,2,0,0]);
+        sudoku_grid.push([7,0,9,0,0,0,0,0,0]);
+        break;
+      case 4:
+        sudoku_grid.push([0,0,1,0,4,8,0,6,0]);
+        sudoku_grid.push([2,0,5,9,3,0,0,0,0]);
+        sudoku_grid.push([0,0,7,0,0,0,9,8,3]);
+        sudoku_grid.push([8,0,0,0,7,0,0,2,0]);
+        sudoku_grid.push([7,3,0,5,0,2,0,4,6]);
+        sudoku_grid.push([0,2,0,0,6,0,0,0,9]);
+        sudoku_grid.push([4,1,3,0,0,0,6,0,0]);
+        sudoku_grid.push([0,0,0,0,9,4,1,0,2]);
+        sudoku_grid.push([0,7,0,6,8,0,5,0,0]);
+        break;
+      case 5:
+        sudoku_grid.push([3,0,0,0,2,0,0,0,8]);
+        sudoku_grid.push([0,0,5,0,1,0,9,0,0]);
+        sudoku_grid.push([0,0,0,7,0,9,0,0,0]);
+        sudoku_grid.push([0,2,0,4,8,3,0,6,0]);
+        sudoku_grid.push([0,0,0,0,0,0,0,0,0]);
+        sudoku_grid.push([0,8,0,1,7,6,0,5,0]);
+        sudoku_grid.push([0,0,0,8,0,1,0,0,0]);
+        sudoku_grid.push([0,0,1,0,4,0,5,0,0]);
+        sudoku_grid.push([7,0,0,0,9,0,0,0,4]);
+        break;
+      case 6:
+        sudoku_grid.push([2,0,0,0,0,6,0,0,1]);
+        sudoku_grid.push([0,0,9,4,0,1,0,0,0]);
+        sudoku_grid.push([0,0,7,0,0,0,8,6,0]);
+        sudoku_grid.push([6,2,0,0,4,0,0,7,0]);
+        sudoku_grid.push([0,0,0,7,0,8,0,0,0]);
+        sudoku_grid.push([0,8,0,0,9,0,0,5,3]);
+        sudoku_grid.push([0,9,3,0,0,0,7,0,0]);
+        sudoku_grid.push([0,0,0,3,0,9,2,0,0]);
+        sudoku_grid.push([8,0,0,6,0,0,0,0,4]);
+      break;
+      default:
+        sudoku_grid.push([7,0,0,0,5,0,0,9,0]);
+        sudoku_grid.push([0,0,0,8,9,0,0,0,0]);
+        sudoku_grid.push([9,6,0,0,0,0,2,0,0]);
+        sudoku_grid.push([0,1,0,0,0,6,3,0,9]);
+        sudoku_grid.push([0,3,0,0,0,0,0,4,0]);
+        sudoku_grid.push([2,0,4,3,0,0,0,8,0]);
+        sudoku_grid.push([0,0,9,0,0,0,0,2,1]);
+        sudoku_grid.push([0,0,0,0,1,8,0,0,0]);
+        sudoku_grid.push([0,2,0,0,3,0,0,0,7]);
+        break;
+    }
     displaySudokuInConsole();
 }
 
@@ -357,11 +433,150 @@ function minimumConstraint() { // searches for cell with minimum choices left
             else; //do nothing
         }
     }
+    // console.log('-----------------')
+    temp_min_pos = []
+    if(min_val < 4 && min_val>0 && min_pos.length>2){
+      for(x in min_pos){
+        for(y=x;y<min_pos.length;y++){
+          if(x!=y){
+            i1 = min_pos[x][0];
+            j1 = min_pos[x][1];
+            i2 = min_pos[y][0];
+            j2 = min_pos[y][1];
+            if(JSON.stringify(constraint[i1][j1].sort(function(a,b){return b-a}))==JSON.stringify(constraint[i2][j2].sort(function(a,b){return b-a}))) {//if the contents of constraint are same
+              if(i1==i2 || j2==j2 || box_unit_index_from_cell_pos(i1,j1)==box_unit_index_from_cell_pos(i2,j2)){// row or column or box
+                temp_min_pos.push([i1,j1])
+                temp_min_pos.push([i2,j2])
+              }
+            }
+          }
+        }
+        // console.log(JSON.stringify(constraint[min_pos[x][0]][min_pos[x][1]]));
+      }
+      if(temp_min_pos.length>0) min_pos = [... new Set(temp_min_pos)]
+    }
+    // console.log(JSON.stringify(min_pos))
+    // console.log('----/-------/------')
     return min_pos;
 }
 
 var g_counter = 0;
 
+function box_unit_index_from_cell_pos(i,j){
+  if(i<3){
+    if(j<3) return 0;
+    if(j<6) return 1;
+    return 2;
+  }
+  else if(i<6){
+    if(j<3) return 3;
+    if(j<6) return 4;
+    return 5;
+  }
+  else {
+    if(j<3) return 6;
+    if(j<6) return 7;
+    return 8;
+  }
+}
+
+function check_through_column_unit(indexI,indexJ,value){
+    // console.log('check_through_column_unit',indexI,indexJ,value)
+    for(index in col_unit[indexJ]){
+      if(col_unit[indexJ][index][0]!=indexI){
+        // console.log(col_unit[indexJ][index][0],col_unit[indexJ][index][1])
+        cnstrnt = constraint[col_unit[indexJ][index][0]][col_unit[indexJ][index][1]];
+        // console.log(JSON.stringify(cnstrnt))
+        if(cnstrnt.length==1){
+          if(sudoku_grid[col_unit[indexJ][index][0]][col_unit[indexJ][index][1]] == value) return false
+        } else {
+          for(x in cnstrnt){
+            if(cnstrnt[x]==value) return false
+          }
+        }
+      }
+    }
+    return true
+}
+
+function check_through_row_unit(indexI,indexJ,value){
+    // console.log('check_through_row_unit',indexI,indexJ,value)
+    for(index in row_unit[indexI]){
+      if(row_unit[indexI][index][1]!=indexJ){
+        // console.log(row_unit[indexI][index][0],row_unit[indexI][index][1])
+        cnstrnt = constraint[row_unit[indexI][index][0]][row_unit[indexI][index][1]];
+        // console.log(JSON.stringify(cnstrnt))
+        if(cnstrnt.length==1){
+          if(sudoku_grid[row_unit[indexI][index][0]][row_unit[indexI][index][1]] == value) return false
+        } else {
+          for(x in cnstrnt){
+            if(cnstrnt[x]==value) return false
+          }
+        }
+      }
+    }
+    return true
+}
+//
+function check_through_box_unit(indexI,indexJ,value){
+    for(index in box_unit[box_unit_index_from_cell_pos(indexI,indexJ)]){
+      if(row_unit[indexI][index][0]!=indexI && row_unit[indexI][index][1]!=indexJ){
+        cnstrnt = constraint[row_unit[indexI][index][0]][row_unit[indexI][index][1]];
+        if(cnstrnt.length==1){
+          if(sudoku_grid[row_unit[indexI][index][0]][row_unit[indexI][index][1]] == value) return false
+        } else {
+          for(x in cnstrnt){
+            if(x==value) return false
+          }
+        }
+      }
+    }
+    return true
+}
+//
+function RBinteraction(){
+  rb_trace = [];
+  for(i=0;i<9;i++){
+    for(j=0;j<9;j++){//in each cell in sudoku grid
+      if(constraint[i][j].length>2){//if there is more than 1 constraint
+        for(k=0;k<constraint[i][j].length-1;k++){//for each constraint, check if it is unique
+          row_flag = check_through_row_unit(i,j,constraint[i][j][k])
+          box_flag = check_through_box_unit(i,j,constraint[i][j][k])
+          if(row_flag && box_flag){
+            // console.log(i,j,JSON.stringify(constraint[i][j]),constraint[i][j][k])
+            sudoku_grid[i][j] = constraint[i][j][k];
+            forwardPropagation(i, j, constraint[i][j][k]);
+            rb_trace.push({'pos':[i,j],'value':constraint[i][j][k]});
+          }
+        }
+      }
+    }
+  }
+  return rb_trace;
+}
+
+function CBinteraction(){
+  cb_trace = [];
+  for(i=0;i<9;i++){
+    for(j=0;j<9;j++){//in each cell in sudoku grid
+      if(constraint[i][j].length>2){//if there is more than 1 constraint
+        for(k=0;k<constraint[i][j].length-1;k++){//for each constraint, check if it is unique
+          row_flag = check_through_column_unit(i,j,constraint[i][j][k])
+          box_flag = check_through_box_unit(i,j,constraint[i][j][k])
+          if(row_flag && box_flag){
+            // console.log(i,j,JSON.stringify(constraint[i][j]),constraint[i][j][k])
+            sudoku_grid[i][j] = constraint[i][j][k];
+            forwardPropagation(i, j, constraint[i][j][k]);
+            cb_trace.push({'pos':[i,j],'value':constraint[i][j][k]});
+          }
+        }
+      }
+    }
+  }
+  return cb_trace;
+}
+
+flag_one = true;
 function solutionFinder() {
     if (visualize) {
         console.log('displaySudokuInConsole: ');
@@ -370,56 +585,122 @@ function solutionFinder() {
     var min_list = minimumConstraint();
     var selected_min;
     var min_pos;
-    if (min_list.length > 1) {
-        selected_min = getRandomNumber(0, (min_list.length - 1));
-        min_pos = min_list[selected_min]; // randomly selecting out of minimum constraints;
-    }
-    else min_pos = min_list[0];
 
-    if (!Array.isArray(min_pos)) return false;
+    counter = min_list.length;
+    while(counter>0){
+      counter--;
+      if (min_list.length > 1) {
+        if(random){
+          selected_min = getRandomNumber(0, counter);
+          min_pos = min_list[selected_min]; // randomly selecting out of minimum constraints;
+          min_list.splice(selected_min,1);
+        } else {
+           min_pos = min_list[counter];
+           min_list.splice(counter,1);
+        }
+      }
+      else{
+         min_pos = min_list[0];
+         min_list.splice(0,1);
+      }
 
-    if (debug) {
-        console.log('list of position with minimum constraint: \n', min_list, "\n random selection of position: ", min_pos)
-        console.log('choices possible in selected position: ', constraint[min_pos[0]][min_pos[1]])
-    }
+      if (!Array.isArray(min_pos)) return false;
 
-    var cns = [...constraint[min_pos[0]][min_pos[1]]];//cloning
-    while (cns.length > 1) {
-        var insert_value = cns.shift() //choices are retrieved from constraint as a queue
+      if (debug) {
+          console.log('list of position with minimum constraint: \n', min_list, "\n random selection of position: ", min_pos)
+          console.log('choices possible in selected position: ', constraint[min_pos[0]][min_pos[1]])
+      }
 
-        sudoku_grid[min_pos[0]][min_pos[1]] = insert_value;
-        if (visualize) {
-            console.log('displaySudokuInConsole: ');
-            displaySudokuInConsole();
+      var cns = [...constraint[min_pos[0]][min_pos[1]]];//cloning
+      rb_trace = [];
+      cb_trace = [];
+
+      if(row_block_interaction){
+        if(cns.length==2 && flag_one){//cns.length=2 means there is one constraint
+          flag_one = true;
+        } else {
+          flag_one = false;
+          // return false;
         }
 
-        forwardPropagation(min_pos[0], min_pos[1], insert_value);
-        var cell_left = checkAllFilled();
+        if(flag_one){
+          console.log('flag one')
+          //there is no way to backpropagate, so this can be the safest way to do it
+          rb_trace = RBinteraction();
+          cb_trace = CBinteraction();
+        }
+      }
 
-        if (cell_left > 0) {// no solution found yet
-            if (debug) console.log(cell_left, ' number of empty cells remains')
-        } else return true; // possibly solution is found
+      while (cns.length > 1) {
+          var insert_value;
+          //-----------
+          if(!random){
+            insert_value = cns.shift() //choices are retrieved from constraint as a queue
+          } else {
+            random_index = getRandomNumber(0, (cns.length - 2)); //randomly selecting values
+            temp = [];
 
-        var status = solutionFinder();
-        if (status)  return true; //solution found
+            for(i=0;i<cns.length-1;i++){
+              if(random_index==i){
+                insert_value = cns[i];
+              } else {
+                temp.push(cns[i]);
+              }
+            }
+            temp.push(cns.length-1);
+            cns = temp;
 
-        //if solution is not found with insert_value undo the changes
-        var trace = choice_trace.pop();
-        var pos = trace['pos'];
-        var value = trace['value'];
-        //console.log('inside backwardPropagation....', pos);
-        if (!Array.isArray(pos)) return;
-        sudoku_grid[pos[0]][pos[1]] = 0; //emptying the cell
-        var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
-        constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
-        constraint[pos[0]][pos[1]].push(t); // inserting the flag
-        complete_trace['choice_trace'].push({ 'pos': [pos[0], pos[1]], 'value': 0, 'propagation': 'backward' });
+          }
+          //--------------
+          sudoku_grid[min_pos[0]][min_pos[1]] = insert_value;
+          if (visualize) {
+              console.log('displaySudokuInConsole: ');
+              displaySudokuInConsole();
+          }
 
+          forwardPropagation(min_pos[0], min_pos[1], insert_value);
+          var cell_left = checkAllFilled();
+
+          if (cell_left > 0) {// no solution found yet
+              if (debug) console.log(cell_left, ' number of empty cells remains')
+          } else return true; // possibly solution is found
+
+          var status = solutionFinder();
+          if (status)  return true; //solution found
+
+          //if solution is not found with insert_value undo the changes
+          var trace = choice_trace.pop();
+          var pos = trace['pos'];
+          var value = trace['value'];
+          //console.log('inside backwardPropagation....', pos);
+          if (!Array.isArray(pos)) return;
+          sudoku_grid[pos[0]][pos[1]] = 0; //emptying the cell
+          // constraint[pos[0]][pos[1]].unshift(value);
+          var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
+          constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
+          constraint[pos[0]][pos[1]].push(t); // inserting the flag
+          complete_trace['choice_trace'].push({ 'pos': [pos[0], pos[1]], 'value': 0, 'propagation': 'backward' });
+
+          backwardPropagation();
+          if (visualize) {
+              console.log('backpropagation --- displaySudokuInConsole: ');
+              displaySudokuInConsole();
+          }
+      }
+      for(x in cb_trace){
+        i = cb_trace[x]['pos'][0]
+        j = cb_trace[x]['pos'][1]
+        updateSudoku_grid(i,j,0);
+        constraint[pos[0]][pos[1]].unshift(cb_trace[x]['value']);
         backwardPropagation();
-        if (visualize) {
-            console.log('backpropagation --- displaySudokuInConsole: ');
-            displaySudokuInConsole();
-        }
+      }
+      for(x in rb_trace){
+        i = rb_trace[x]['pos'][0]
+        j = rb_trace[x]['pos'][1]
+        updateSudoku_grid(i,j,0);
+        constraint[i][j].unshift(rb_trace[x]['value']);
+        backwardPropagation();
+      }
     }
     return false; //all the possible choices are exhausted and still no solution is found
 
@@ -583,12 +864,13 @@ function displaySudokuInConsole() {
 }
 
 function copyToInput(){
+  window['input_sudoku'] = [];
   for(x in sudoku_grid){
     var temp = [];
     for(y in sudoku_grid[x]){
       temp.push(sudoku_grid[x][y]);
     }
-    input_sudoku.push(temp);
+    window['input_sudoku'].push(temp);
   }
 }
 
@@ -613,7 +895,11 @@ function solve() {
     }
 
     initializeConstraint();
-
+    if(row_block_interaction){
+      RBinteraction();
+      CBinteraction();
+    }
+    // return false;
     if (debug) {
         console.log("Constraints Intialized: \n");
         displayConstraintsForDebug();
@@ -621,6 +907,18 @@ function solve() {
 
     if (debug) console.log('SolutionFinder is Called: First call');
     var status = solutionFinder();
+    // console.log(complete_trace['choice_trace'])
+    steps_counter = 0
+    backtrack_counter = 0
+    for(x in complete_trace['choice_trace']){
+      if(complete_trace['choice_trace'][x]['propagation']==='forward'){
+        // console.log(JSON.stringify(complete_trace['choice_trace'][x]));
+        steps_counter++;
+      } else {
+        backtrack_counter++;
+      }
+    }
+    console.log('count: ',steps_counter,' No.of backtracks: ',backtrack_counter)
     if (status) {
         console.log('complete');
         displaySudokuInConsole();

@@ -218,11 +218,11 @@ UI.prototype.drawSudokuBoard = function () {
     this.dentedCells();
 }
 
-UI.prototype.initializeTestInputs = function(){
+UI.prototype.initializeTestInputs = function(number){
     document.getElementById('msg').style.display = 'block'
-    document.getElementById('msg').innerHTML = 'Demo Input Is Loaded.<br> Now click on solve to get a solution.'
+    document.getElementById('msg').innerHTML = 'Demo '+number+' Input Is Loaded.<br> Now click on solve to get a solution.'
 
-    useDemoInput();
+    useDemoInput(number);
     this.writeInputOnBoard(sudoku_grid);
 
 }
@@ -328,7 +328,9 @@ solutionTraceForward = function(){
           sudoku_ui.ctx.fillText(value, i+2, j);
         } else { //if propagation is backward
           clearInterval(solutionTraceAnimation_interval_id);
-          solutionTraceAnimation_interval_id = setInterval(solutionTraceBackward,200);
+          interval = 200;
+          if(steps_counter>100) interval = 50;
+          solutionTraceAnimation_interval_id = setInterval(solutionTraceBackward,interval);
           return;
         }
   }
@@ -356,7 +358,7 @@ solutionTraceBackward = function(){
       // Fill with gradient
       sudoku_ui.ctx.fillStyle = 'white';
       sudoku_ui.ctx.fillText('bc'+backpropagationCounter++, i, j-5);
-    } else { //if propagation is backward
+    } else { //if propagation is forward
       backpropagationCounter = 1;
       clearInterval(solutionTraceAnimation_interval_id);
       solutionTraceAnimation_interval_id = setInterval(function(){
@@ -373,7 +375,7 @@ solutionTraceBackward = function(){
               //------
               solutionTraceAnimation_interval_id = setInterval(solutionTraceForward,200);
           }
-      },150);
+      },100);
       return;
     }
   }
