@@ -23,7 +23,7 @@ UI = function() {
 UI.prototype.Initialize = function (canvas_id) {
     this.cns = document.getElementById(canvas_id)
 
-        console.log(canvas_id)
+    // console.log(canvas_id)
     if (!this.cns) {
         console.log('there is no canvas html element with given id '+canvas_id)
         this.initialized = false
@@ -173,7 +173,7 @@ UI.prototype.putNumber = function(k){
 
 UI.prototype.drawSudokuBoard = function () {
     if (!this.initialized) return
-    console.log('inside drawSudokuBoard')
+    // console.log('inside drawSudokuBoard')
     this.ctx.fillStyle = 'white';
     this.ctx.lineWidth = "2";
     this.ctx.beginPath();
@@ -186,7 +186,7 @@ UI.prototype.drawSudokuBoard = function () {
     this.ctx.beginPath();
 
     var cell_size = Math.floor((this.board_size) / 9)
-    console.log(cell_size)
+    // console.log(cell_size)
     for (i = 0; i < 9; i++) {
         for (j = 0; j < 9; j++) {
             this.ctx.rect(0 + j * cell_size, 0 + i * cell_size, cell_size, cell_size);

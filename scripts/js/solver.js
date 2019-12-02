@@ -25,7 +25,7 @@ var box_unit = [[], [], [], [], [], [], [], [], []]; // groups cells as per box 
 var peers = [[], [], [], [], [], [], [], [], []]; // contains peers, index to row_unit, col_unit and box_unit for each cell
 var constraint = [[], [], [], [], [], [], [], [], []]; // stores possible choices left for any cell in sudoku
 var visualize = false; //if set true displays sudoku during every changes made on console.
-var debug = true;//displays working information of the program, while searching for solution,on the console. like where it is currently, where the change is made in sudoku
+var debug = false;//displays working information of the program, while searching for solution,on the console. like where it is currently, where the change is made in sudoku
 var test_input = false;
 var user_input = false;
 
@@ -45,10 +45,10 @@ var backtrack_counter;
 
 function clearPreviousSolution() {
     initializeEmptyGrid();
-    row_unit = [[], [], [], [], [], [], [], [], []]
-    col_unit = [[], [], [], [], [], [], [], [], []];
-    box_unit = [[], [], [], [], [], [], [], [], []];
-    peers = [[], [], [], [], [], [], [], [], []];
+    // row_unit = [[], [], [], [], [], [], [], [], []]
+    // col_unit = [[], [], [], [], [], [], [], [], []];
+    // box_unit = [[], [], [], [], [], [], [], [], []];
+    // peers = [[], [], [], [], [], [], [], [], []];
     constraint = [[], [], [], [], [], [], [], [], []];
     complete_trace = { 'choice_trace': [], 'propagation_trace': [] };
     // console.log(complete_trace);
@@ -79,15 +79,15 @@ function useDemoInput(number) {
 
     switch(number){
       case 1:
-        sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
-        sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
-        sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
-        sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
-        sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
-        sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
-        sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
-        sudoku_grid.push([0, 0, 0, 7, 0, 6, 0, 9, 0]);
+        sudoku_grid = [[0,0,0,0,0,0,8,0,1],[6,0,0,2,0,0,0,0,0],[0,0,0,7,0,5,0,0,0],[0,0,0,6,0,0,0,2,0],[0,1,0,0,0,0,3,0,0],[0,8,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,7,0],[0,3,0,0,8,0,0,0,0],[5,0,0,0,4,0,0,0,0]]; // sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
+        // sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
+        // sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
+        // sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
+        // sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        // sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
+        // sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
+        // sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
+        // sudoku_grid.push([0, 0, 0, 7, 0, 6, 0, 9, 0]);
         break;
       case 2:
         sudoku_grid.push([0,3,0,4,8,0,6,0,9]);
@@ -297,6 +297,19 @@ function initialPropagation() {
     complete_trace['propagation_trace'] = [];
 }
 
+
+initializePeers();
+
+if (debug) console.log("peers initialized: \n", JSON.stringify(peers));
+
+initialzeUnits();
+
+if (debug) {
+    console.log("Row Units Initialized: \n", JSON.stringify(row_unit))
+    console.log("Column Units Initialized: \n", JSON.stringify(col_unit))
+    console.log("Box Units Initialized: \n", JSON.stringify(box_unit))
+}
+
 //------ --- ---- ----------  -- ---  ----
 //------- - ---- - --------    - -     ---
 //-------- ---- --- -----------   ----------
@@ -411,7 +424,10 @@ function backwardPropagation() {
         var traceX = ptrace[x];
         var i = traceX['pos'][0];
         var j = traceX['pos'][1];
-        constraint[i][j].unshift(traceX['value']);
+        // constraint[i][j].unshift(traceX['value']);
+        var t = constraint[i][j].pop(); // because last element is a flag that determines if its a input or not
+        constraint[i][j].push(traceX['value']); // inserting value to the end of the constraint because it is unlikely the result
+        constraint[i][j].push(t); // inserting the flag
     }
 }
 
@@ -585,13 +601,12 @@ function solutionFinder() {
     var min_list = minimumConstraint();
     var selected_min;
     var min_pos;
-
     counter = min_list.length;
     while(counter>0){
       counter--;
       if (min_list.length > 1) {
         if(random){
-          selected_min = getRandomNumber(0, counter);
+          selected_min = getRandomNumber(0, (min_list.length - 1));
           min_pos = min_list[selected_min]; // randomly selecting out of minimum constraints;
           min_list.splice(selected_min,1);
         } else {
@@ -675,10 +690,10 @@ function solutionFinder() {
           //console.log('inside backwardPropagation....', pos);
           if (!Array.isArray(pos)) return;
           sudoku_grid[pos[0]][pos[1]] = 0; //emptying the cell
-          // constraint[pos[0]][pos[1]].unshift(value);
-          var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
-          constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
-          constraint[pos[0]][pos[1]].push(t); // inserting the flag
+          constraint[pos[0]][pos[1]].unshift(value);
+          // var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
+          // constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
+          // constraint[pos[0]][pos[1]].push(t); // inserting the flag
           complete_trace['choice_trace'].push({ 'pos': [pos[0], pos[1]], 'value': 0, 'propagation': 'backward' });
 
           backwardPropagation();
@@ -875,6 +890,7 @@ function copyToInput(){
 }
 
 function solve() {
+  flag_one = true;
     if (!user_input && !test_input) return false
     if (user_input) {
         //do some tests first
@@ -882,17 +898,6 @@ function solve() {
     }
 
     copyToInput();
-    initializePeers();
-
-    if (debug) console.log("peers initialized: \n", JSON.stringify(peers));
-
-    initialzeUnits();
-
-    if (debug) {
-        console.log("Row Units Initialized: \n", JSON.stringify(row_unit))
-        console.log("Column Units Initialized: \n", JSON.stringify(col_unit))
-        console.log("Box Units Initialized: \n", JSON.stringify(box_unit))
-    }
 
     initializeConstraint();
     if(row_block_interaction){
@@ -918,10 +923,11 @@ function solve() {
         backtrack_counter++;
       }
     }
-    console.log('count: ',steps_counter,' No.of backtracks: ',backtrack_counter)
+    
     if (status) {
+      // console.log('count: ',steps_counter,' No.of backtracks: ',backtrack_counter)
         console.log('complete');
-        displaySudokuInConsole();
+        // displaySudokuInConsole();
         return true;
     }
     else return false;

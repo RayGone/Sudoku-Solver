@@ -101,11 +101,13 @@
               <input type="checkbox" onchange='dothisRB(this)'>
               <span class="slider round"></span>
             </label>
+            <a id=link style='display:none' target='_blank'></a>
             &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>Row-block Interaction <b>Off</b></span>
             <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
                 <div class='col-md-4' style='background-color:#555555;padding:5px'><canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas></div>
                 <div class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
                     <div class='butn hide' id='userInput'>validate Input</div>
+                    <div class='butn' id='run_test'>run test</div>
                     <div class='butn' id='test'>use demo input</div>
                     <div id='demo-list' class='hide'>
                       <div class='butn' onclick='initializeDemo(1)'>Demo 1</div>
@@ -138,6 +140,7 @@
             <script src="scripts/js/getSudoku.js"></script>
             <script src="scripts/js/solver.js"></script>
             <script src="scripts/js/Sudoku_Canvas_UI.js"></script>
+            <script src="scripts/js/run_tests.js"></script>
 
             <script>
 
@@ -224,7 +227,8 @@
 
                     document.getElementById('clear').addEventListener('click',function() {
                       sudoku_ui.clearCurrentSudoku();
-                      document.getElementById('demo-list').classList.add('hide')
+                      document.getElementById('demo-list').classList.add('hide');
+                      document.getElementById('test').classList.remove('hide');
                       document.getElementById('solve').classList.add('hide');
                       document.getElementById('userInput').classList.add('hide');
                       document.getElementById('trace').classList.add('hide');
@@ -307,6 +311,7 @@
                       }
                       console.log(row_block_interaction)
                     }
+
             </script>
 </body>
 </html>
