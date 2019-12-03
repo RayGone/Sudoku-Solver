@@ -115,6 +115,9 @@ function console_result(){
 
 document.getElementById('run_test').addEventListener('click',function(){
   sudoku_index = 0;
+  backtrack_array = [];
+  steps_array = [];
+  time = [];
   run_tests();
 });
 
