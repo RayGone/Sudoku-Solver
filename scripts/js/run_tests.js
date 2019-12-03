@@ -69,7 +69,9 @@ function console_result(){
   min = steps_array[0];
   max_index = 0;
   min_index = 0;
+  time_avg = 0;
   for(x in steps_array){
+    time_avg += time[x];
     sum+=steps_array[x];
     if(steps_array[x]>max){
        max = steps_array[x];
@@ -81,19 +83,20 @@ function console_result(){
     }
   }
   avg = sum/steps_array.length;
+  time_avg = time_avg/time_avg.length;
   console.log('max: ',max, "index: ",max_index,"time: ",time[max_index]);
   console.log('min: ',min,"index: ",min_index,"time: ",time[min_index]);
-  console.log('average: ',avg);
+  console.log('AVERAGES\n---------\nSteps: ',avg,"time: ",time_avg);
 
   console.log('---------------------')
   console.log('___BACKTRACKS:___')
-  sum = 0;
+  // sum = 0;
   max = 0;
   min = backtrack_array[0];
   max_index = 0;
   min_index = 0;
   for(x in backtrack_array){
-    sum+=backtrack_array[x];
+    // sum+=backtrack_array[x];
     if(backtrack_array[x]>max){
        max = backtrack_array[x];
        max_index = x;
@@ -104,9 +107,9 @@ function console_result(){
     }
   }
   avg = sum/backtrack_array.length;
-  console.log('max: ',max, "index: ",max_index,"time: ",time[max_index]);
-  console.log('min: ',min,"index: ",min_index,"time: ",time[min_index]);
-  console.log('average: ',avg);
+  console.log('max: ',max, "index: ",max_index);
+  console.log('min: ',min,"index: ",min_index);
+  // console.log('average: ',avg);
   console.log('*******************');
 }
 
