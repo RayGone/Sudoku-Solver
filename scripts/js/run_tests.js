@@ -83,7 +83,7 @@ function console_result(){
     }
   }
   avg = sum/steps_array.length;
-  time_avg = time_avg/time_avg.length;
+  time_avg = time_avg/time.length;
   console.log('max: ',max, "index: ",max_index,"time: ",time[max_index]);
   console.log('min: ',min,"index: ",min_index,"time: ",time[min_index]);
   console.log('AVERAGES\n---------\nSteps: ',avg,"time: ",time_avg);
