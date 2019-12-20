@@ -5,6 +5,7 @@ var random = false;
 var row_block_interaction = false;
 var sudoku_grid = [];
 var input_sudoku = []; //its is just a copy of sudoku_grid before solve() is called.
+var constraint_after_initial_propagation = [];
 //initializing sudoku_grid;
 function initializeEmptyGrid() {
     for (var i = 0; i < 9; i++) {
@@ -626,7 +627,7 @@ function solutionFinder() {
           console.log('choices possible in selected position: ', constraint[min_pos[0]][min_pos[1]])
       }
 
-      var cns = [...constraint[min_pos[0]][min_pos[1]]];//cloning
+      var cns = [... constraint[min_pos[0]][min_pos[1]]];//cloning
       rb_trace = [];
       cb_trace = [];
 
@@ -923,7 +924,7 @@ function solve() {
         backtrack_counter++;
       }
     }
-    
+
     if (status) {
       // console.log('count: ',steps_counter,' No.of backtracks: ',backtrack_counter)
         console.log('complete');

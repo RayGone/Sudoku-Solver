@@ -105,8 +105,11 @@
             <a id=link style='display:none' target='_blank'></a>
             &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>Row-block Interaction <b>Off</b></span>
             <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
-                <div class='col-md-4' style='background-color:#555555;padding:5px'><canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas></div>
-                <div class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
+                <div id='col1' class='col-md-4' style='background-color:#555555;padding:5px'>
+                  <canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas>
+                </div>
+                <div id='col2' class='col-md-8' style='display:none'></div>
+                <div id='col3' class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
                     <div class='butn hide' id='userInput'>validate Input</div>
                     <div class='butn' id='run_test'>run test</div>
                     <div class='butn' id='test'>use demo input</div>
@@ -127,7 +130,7 @@
                       <button id="trace" style="display:none" onclick='DisplayTrace();'>Trace</button>
                       <div class="alert alert-info" style="display:none" id="info">We found a solution. Click on trace.</div> -->
                 </div>
-                <div class='col-md-6' style='background-color:#888888;'>
+                <div id='col4' class='col-md-6' style='background-color:#888888;'>
                   <p id='msg' style='display:none' class='alert alert-info'></p>
                   <p id='error'  style='display:none' class='alert alert-danger'></p>
                 </div>

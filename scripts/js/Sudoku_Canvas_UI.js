@@ -105,6 +105,9 @@ UI.prototype.changeSizeOfBoard = function (size) {
       this.board_size = size
 
     this.cell_size = Math.floor((this.board_size) / 9)
+
+    this.cns.width = this.board_size;
+    this.cns.height = this.board_size;
 }
 
 UI.prototype.mouseClick = function(evt,sudoku_ui){//mouseClick is in global namespace, so use of "this" will refer to global object
@@ -227,6 +230,10 @@ UI.prototype.initializeTestInputs = function(number){
 
 }
 
+UI.prototype.setInputSudoku = function(sudoku){
+  this.sudoku = sudoku;
+}
+
 UI.prototype.writeInputOnBoard = function(sudoku){
   for(i=0;i<9;i++){
     for(j=0;j<9;j++){
@@ -296,15 +303,114 @@ UI.prototype.clearCurrentSudoku = function(){
       }
 }
 
-//-----------------GLOBAL functions below----------------
+//---------------
+UI.prototype.show_on_board = function(pos,array){
+  xpos = j * this.cell_size + Math.floor(this.cell_size/2)
+  ypos = i * this.cell_size + Math.floor(this.cell_size/2)-10
+
+  levels = Math.ceil(array.length/3);
+  string = '';
+
+  fontsize =  Math.floor(sudoku_ui.cell_size/3)-10
+
+  this.ctx.font = fontsize+"px Verdana";
+  for(level=0;level<levels;level++){
+    for(x=(level*3);x<(level*3)+3;x++){
+      if(x<array.length-1){
+        if((x+1)%3==0){
+          string += +array[x]
+        }else {
+          string += array[x]+'-'
+        }
+
+      }
+    }
+
+    this.ctx.fillStyle = 'black';
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(string, xpos, ypos+(level*(fontsize+5)));
+
+    string = ''
+  }
+
+}
+
+UI.prototype.putDomainOnUI = function(){
+    for(i=0;i<this.domain.length;i++){
+      for(j=0;j<this.domain[i].length;j++){
+        console.log(this.domain[i][j].length)
+        if(this.domain[i][j].length>1){
+          this.show_on_board([i,j],this.domain[i][j]);
+        }
+      }
+    }
+}
+
+UI.prototype.Domain_Before_Initial_Propagation = function(domain){
+  this.domain = [];
+  for(i in domain){
+    this.domain.push([]);
+    for(j in domain[i]){
+      if(domain[i][j].length != 1){
+        this.domain[i].push([1,2,3,4,5,6,7,8,9,0])
+      }else {
+        this.domain[i].push(domain[i][j])
+      }
+    }
+  }
+  this.putDomainOnUI();
+}
+
+UI.prototype.setDomain = function(domain){
+  this.domain = domain;
+  this.putDomainOnUI();
+}
+//-------------
+
+/*----------------                            ------------------*/
+  //-----------------GLOBAL functions below----------------
+/*----------------                            ------------------*/
 
 solutionTraceAnimation_interval_id = '';
 solutionTraceAnimation_counter = 0;
 solutionTraceBackward_trace_array = [];
 backpropagationCounter = 1;
 
+domain = [... constraint_after_initial_propagation];
+
+initial_propagation_tracker = 0;
+
+Initial_Propagation_Animation = function(){
+  sudoku_ui.Domain_Before_Initial_Propagation(domain);
+  counter = 0
+  for(i in sudoku_ui.sudoku){
+    for(j in sudoku_ui.sudoku[i]){
+      console.log(sudoku_ui.sudoku[i][j])
+      if(sudoku_ui.sudoku[i][j] !== 0){
+        console.log('input position found: propagating')
+      }
+    }
+  }
+
+}
+
 
 solutionTraceAnimation = function(){
+  domain = [... constraint_after_initial_propagation];
+  // console.log(sudoku_ui);
+  if(sudoku_ui.board_size<600){
+    if(sudoku_ui.board_size*3>600)
+      sudoku_ui.changeSizeOfBoard(600);
+    else
+      sudoku_ui.changeSizeOfBoard(sudoku_ui.board_size*3);
+  }
+  sudoku_ui.cns.parentNode.classList.remove("col-md-4")
+  sudoku_ui.cns.parentNode.classList.add("col-md-12")
+  sudoku_ui.drawSudokuBoard();
+  sudoku_ui.setInputSudoku(input_sudoku);
+  sudoku_ui.writeInputOnBoard(input_sudoku);
+  Initial_Propagation_Animation();
+  return
   solutionTraceAnimation_counter = 0;
   solutionTraceAnimation_interval_id = setInterval(solutionTraceForward,200);
 
@@ -337,6 +443,8 @@ solutionTraceForward = function(){
   else {
       clearInterval(solutionTraceAnimation_interval_id);
       console.log('DisplayTrace exited')
+      sudoku_ui.cns.parentNode.classList.add("col-md-4")
+      sudoku_ui.cns.parentNode.classList.remove("col-md-12")
   }
   solutionTraceAnimation_counter++;
 }
@@ -383,6 +491,8 @@ solutionTraceBackward = function(){
       console.log('cleared')
       clearInterval(solutionTraceAnimation_interval_id);
       console.log('DisplayTrace exited')
+      sudoku_ui.cns.parentNode.classList.add("col-md-4")
+      sudoku_ui.cns.parentNode.classList.remove("col-md-12")
   }
   solutionTraceAnimation_counter++;
 }
