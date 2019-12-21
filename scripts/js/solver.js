@@ -474,7 +474,7 @@ function minimumConstraint() { // searches for cell with minimum choices left
     }
     // console.log(JSON.stringify(min_pos))
     // console.log('----/-------/------')
-    return min_pos;
+    return [min_pos[0]];
 }
 
 var g_counter = 0;

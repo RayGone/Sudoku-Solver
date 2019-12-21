@@ -74,7 +74,7 @@ UI.prototype.Initialize = function (canvas_id) {
 
         // Fill with gradient
         sudoku_ui.ctx.fillStyle = 'red';
-        sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.I][sudoku_ui.J], X+2, Y);
+        sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.I][sudoku_ui.J], X+2, Y-5);
 
         sudoku_ui.cell_with_number_clicked = true;
         sudoku_ui.cell_with_number_I = sudoku_ui.I
@@ -168,7 +168,7 @@ UI.prototype.putNumber = function(k){
 
   // Fill with gradient
   this.ctx.fillStyle = 'green';
-  this.ctx.fillText(k, X+2, Y);
+  this.ctx.fillText(k, X+2, Y-5);
   this.ctx.restore()
   if(k!='') document.getElementById('msg').innerHTML = 'Number '+k+' is placed on cell['+(this.I+1)+","+(this.J+1)+"]";
   else{ if(!zero)document.getElementById('msg').innerHTML = 'Please Press Number Keys only!!<br> Inserting non-digit key clears input in selected cell.'; }
@@ -247,7 +247,7 @@ UI.prototype.writeInputOnBoard = function(sudoku){
 
         // Fill with gradient
         this.ctx.fillStyle = 'green';
-        this.ctx.fillText(sudoku[i][j], pi+2, pj);
+        this.ctx.fillText(sudoku[i][j], pi+2, pj-5);
       } else {
         this.ctx.fillStyle = 'white'
         this.ctx.fillRect((j*this.cell_size)+4,(i*this.cell_size)+4,this.cell_size-6,this.cell_size-7)
@@ -255,6 +255,7 @@ UI.prototype.writeInputOnBoard = function(sudoku){
     }
   }
 }
+
 
 UI.prototype.writeSolutionOnBoard = function(){
   for(i=0;i<9;i++){
@@ -303,10 +304,14 @@ UI.prototype.clearCurrentSudoku = function(){
       }
 }
 
+
+//----------------
 //---------------
+//--------------
+
 UI.prototype.show_on_board = function(pos,array){
-  xpos = j * this.cell_size + Math.floor(this.cell_size/2)
-  ypos = i * this.cell_size + Math.floor(this.cell_size/2)-10
+  xpos = pos[1] * this.cell_size + Math.floor(this.cell_size/2)
+  ypos = pos[0] * this.cell_size + Math.floor(this.cell_size/2)-10
 
   levels = Math.ceil(array.length/3);
   string = '';
@@ -338,7 +343,7 @@ UI.prototype.show_on_board = function(pos,array){
 UI.prototype.putDomainOnUI = function(){
     for(i=0;i<this.domain.length;i++){
       for(j=0;j<this.domain[i].length;j++){
-        console.log(this.domain[i][j].length)
+        // console.log(this.domain[i][j].length)
         if(this.domain[i][j].length>1){
           this.show_on_board([i,j],this.domain[i][j]);
         }
@@ -365,6 +370,8 @@ UI.prototype.setDomain = function(domain){
   this.domain = domain;
   this.putDomainOnUI();
 }
+
+
 //-------------
 
 /*----------------                            ------------------*/
@@ -378,22 +385,175 @@ backpropagationCounter = 1;
 
 domain = [... constraint_after_initial_propagation];
 
-initial_propagation_tracker = 0;
 
-Initial_Propagation_Animation = function(){
-  sudoku_ui.Domain_Before_Initial_Propagation(domain);
-  counter = 0
-  for(i in sudoku_ui.sudoku){
-    for(j in sudoku_ui.sudoku[i]){
-      console.log(sudoku_ui.sudoku[i][j])
-      if(sudoku_ui.sudoku[i][j] !== 0){
-        console.log('input position found: propagating')
-      }
+//------ intital propagations ------------
+
+colorCell = function(pos,color){
+  sudoku_ui.ctx.fillStyle = color
+  sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+}
+
+colorUNIT = function(pos,unit){
+
+  sudoku_ui.ctx.fillStyle = 'blue'
+  sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+
+  fontsize = Math.floor(sudoku_ui.cell_size/2)
+  sudoku_ui.ctx.font = fontsize+"px Verdana";
+
+  sudoku_ui.ctx.fillStyle = 'white';
+  pi = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+  pj = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+  sudoku_ui.ctx.fillText(sudoku_ui.sudoku[pos[0]][pos[1]], pi+12, pj-5);
+
+  for(i in unit){
+    // console.log(sudoku_ui.sudoku[unit[i][0]][unit[i][1]],pos,unit[i],(unit[i][0]!=pos[0] && unit[i][1]!=pos[1]))
+    if((unit[i][0]!=pos[0] || unit[i][1]!=pos[1]) && sudoku_ui.sudoku[unit[i][0]][unit[i][1]]==0) {
+        // console.log(unit[i])
+        xpos = unit[i][1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)
+        ypos = unit[i][0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)-10
+
+        sudoku_ui.ctx.fillStyle = '#329ea8'
+        sudoku_ui.ctx.fillRect((unit[i][1]*sudoku_ui.cell_size)+4,(unit[i][0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+        sudoku_ui.show_on_board(unit[i],sudoku_ui.domain[unit[i][0]][unit[i][1]])
+        
+        temp = []
+        for(value in sudoku_ui.domain[unit[i][0]][unit[i][1]]){
+          if(Number(sudoku_ui.domain[unit[i][0]][unit[i][1]][value])==10) break;
+
+          if(Number(sudoku_ui.domain[unit[i][0]][unit[i][1]][value])!==Number(sudoku_ui.sudoku[pos[0]][pos[1]])){
+            // console.log(Number(sudoku_ui.domain[unit[i][0]][unit[i][1]][value]),Number(sudoku_ui.sudoku[pos[0]][pos[1]]));
+            temp.push(Number(sudoku_ui.domain[unit[i][0]][unit[i][1]][value]));
+          }
+        }
+        sudoku_ui.domain[unit[i][0]][unit[i][1]] = temp;
     }
   }
 
+  setTimeout(decolorUNIT,500,pos,unit);
 }
 
+decolorUNIT = function(pos,unit){
+
+  if(sudoku_ui.domain[pos[0]][pos[1]][0]===10){
+    sudoku_ui.ctx.fillStyle = 'gold'
+    sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+
+    fontsize = Math.floor(sudoku_ui.cell_size/2)
+    sudoku_ui.ctx.font = fontsize+"px Verdana";
+
+    sudoku_ui.ctx.fillStyle = 'green';
+    pi = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+    pj = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+    sudoku_ui.ctx.fillText(sudoku_ui.sudoku[pos[0]][pos[1]], pi+12, pj-5);
+  } else {    
+    sudoku_ui.ctx.fillStyle = '#1aff1a'
+    sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+
+    fontsize = Math.floor(sudoku_ui.cell_size/2)
+    sudoku_ui.ctx.font = fontsize+"px Verdana";
+
+    sudoku_ui.ctx.fillStyle = 'black';
+    pi = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
+    pj = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+    sudoku_ui.ctx.fillText(sudoku_ui.sudoku[pos[0]][pos[1]], pi+12, pj-5);
+  }
+
+  for(i in unit){
+    // console.log(sudoku_ui.sudoku[unit[i][0]][unit[i][1]],pos,unit[i],(unit[i][0]!=pos[0] && unit[i][1]!=pos[1]))
+    if((unit[i][0]!=pos[0] || unit[i][1]!=pos[1]) && sudoku_ui.sudoku[unit[i][0]][unit[i][1]]==0) {
+        // console.log(unit[i])
+        xpos = unit[i][1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)
+        ypos = unit[i][0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)-10
+
+        sudoku_ui.ctx.fillStyle = '#fff'
+        sudoku_ui.ctx.fillRect((unit[i][1]*sudoku_ui.cell_size)+4,(unit[i][0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
+        sudoku_ui.show_on_board(unit[i],sudoku_ui.domain[unit[i][0]][unit[i][1]])
+    }
+  }
+}
+
+
+Initial_Propagation_Animation = function(){
+  sudoku_ui.Domain_Before_Initial_Propagation(domain);
+  // return;
+  counter = 1;
+  time = 1000;
+  for(i in sudoku_ui.sudoku){
+    for(j in sudoku_ui.sudoku[i]){
+      if(sudoku_ui.sudoku[i][j] != 0){
+        // console.log(peers[i][j])
+        row = row_unit[peers[i][j][0]]
+        col = col_unit[peers[i][j][1]]
+        box = box_unit[peers[i][j][2]]
+
+        // console.log('loopo',peers[i][j])
+        setTimeout(colorUNIT,(time*counter),[i,j],row);
+        setTimeout(colorUNIT,(time*counter),[i,j],col);
+        setTimeout(colorUNIT,(time*counter),[i,j],box);
+        counter++;
+        // break;
+      }
+    }
+    // break;
+  }
+  
+  setTimeout(animate_search_for_min_curr,(time*counter));
+  // setTimeout(function(){
+  //   solutionTraceAnimation_counter = 0;
+  //   solutionTraceAnimation_interval_id = setInterval(solutionTraceForward,200);
+  // },(time*counter));
+  console.log(counter)
+  return;
+}
+//--end------------
+
+search_for_min_pos = 0;//starting point
+
+counterToPos = function(counter){
+  c = 0;
+  for(i=0;i<9;i++){
+    for(j=0;j<9;j++){
+      if(c==counter) return [i,j];
+      c++;
+    }
+  }
+}
+
+animate_search_for_min_curr = function(){  
+  if(solutionTraceAnimation_counter < complete_trace['choice_trace'].length){
+    var status = complete_trace['choice_trace'][solutionTraceAnimation_counter]
+    var pos  = status['pos']
+    var curr_pos = counterToPos(search_for_min_pos);
+    
+    // console.log('positions: ',curr_pos,pos,JSON.stringify(pos),JSON.stringify(curr_pos))
+    while(true){ 
+      // console.log(sudoku_ui.sudoku[curr_pos[0]][curr_pos[1]])  
+      if(sudoku_ui.sudoku[curr_pos[0]][curr_pos[1]]==0) break;  
+      // else console.log(sudoku_ui.sudoku[curr_pos[0]][curr_pos[1]])   
+      search_for_min_pos++;
+      curr_pos = counterToPos(search_for_min_pos);
+    }    
+    if(JSON.stringify(pos)===JSON.stringify(curr_pos)){
+      search_for_min_pos = 0;
+      colorCell(pos,'#ad8517');
+      sudoku_ui.show_on_board(curr_pos,sudoku_ui.domain[curr_pos[0]][curr_pos[1]]);
+      sudoku_ui.sudoku[curr_pos[0]][curr_pos[1]] = status['value'];
+      setTimeout(solutionTraceForward,500);
+    } else {
+      colorCell(curr_pos,'#59d97f');
+      sudoku_ui.show_on_board(curr_pos,sudoku_ui.domain[curr_pos[0]][curr_pos[1]]);
+      search_for_min_pos++;
+      setTimeout(animate_search_for_min_curr,100);
+      setTimeout(animate_search_for_min_passed,300,curr_pos);
+    }
+  }
+}
+
+animate_search_for_min_passed = function(pos){  
+    colorCell(pos,'#fff');
+    sudoku_ui.show_on_board(pos,sudoku_ui.domain[pos[0]][pos[1]]);
+}
 
 solutionTraceAnimation = function(){
   domain = [... constraint_after_initial_propagation];
@@ -410,10 +570,7 @@ solutionTraceAnimation = function(){
   sudoku_ui.setInputSudoku(input_sudoku);
   sudoku_ui.writeInputOnBoard(input_sudoku);
   Initial_Propagation_Animation();
-  return
-  solutionTraceAnimation_counter = 0;
-  solutionTraceAnimation_interval_id = setInterval(solutionTraceForward,200);
-
+  // return
 }
 
 solutionTraceForward = function(){
@@ -425,13 +582,26 @@ solutionTraceForward = function(){
           //code here
           sudoku_ui.ctx.fillStyle = '#1aff1a'
           sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
-          i = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) - Math.floor(sudoku_ui.cell_size/5)
-          j = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4)
+          i = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)
+          j = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4.5)
           fontsize = Math.floor(sudoku_ui.cell_size/2)
           sudoku_ui.ctx.font = fontsize+"px Verdana";
           // Fill with gradient
+          sudoku_ui.ctx.textAlign = "center";
           sudoku_ui.ctx.fillStyle = 'black';
-          sudoku_ui.ctx.fillText(value, i+2, j);
+          sudoku_ui.ctx.fillText(value, i, j);          
+          
+          // console.log(peers[i][j])
+          row = row_unit[peers[pos[0]][pos[1]][0]]
+          col = col_unit[peers[pos[0]][pos[1]][1]]
+          box = box_unit[peers[pos[0]][pos[1]][2]]
+
+          // console.log('loopo',peers[i][j])
+          setTimeout(colorUNIT,500,pos,row);
+          setTimeout(colorUNIT,500,pos,col);
+          setTimeout(colorUNIT,500,pos,box);
+
+          setTimeout(animate_search_for_min_curr,800);
         } else { //if propagation is backward
           clearInterval(solutionTraceAnimation_interval_id);
           interval = 200;
@@ -562,7 +732,7 @@ document.getElementsByTagName('body')[0].addEventListener("click",function(){
       sudoku_ui.ctx.font = fontsize+"px Verdana";
 
       sudoku_ui.ctx.fillStyle = 'green';
-      sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.cell_with_number_I][sudoku_ui.cell_with_number_J], X+2, Y);
+      sudoku_ui.ctx.fillText(sudoku_grid[sudoku_ui.cell_with_number_I][sudoku_ui.cell_with_number_J], X+2, Y-5);
       sudoku_ui.cell_with_number_clicked = false;
     }
 
