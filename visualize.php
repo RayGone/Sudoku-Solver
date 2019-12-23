@@ -303,23 +303,23 @@
                     function dothisRandomize(checkbox){
                       if(checkbox.checked){
                         random = true;
-                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>On</b>';
+                        document.getElementById('randomize-toggle').innerHTML = 'RANDOMIZATION <b>On</b>';
                       } else {
                         random = false;
-                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>Off</b>';
+                        document.getElementById('randomize-toggle').innerHTML = 'RANDOMIZATION <b>Off</b>';
                       }
-                      console.log(random)
+                      // console.log(random)
                     }
 
                     function dothisRB(checkbox){
                       if(checkbox.checked){
                         row_block_interaction = true;
-                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>On</b>';
+                        document.getElementById('rb-interaction').innerHTML = 'HIDDEN SINGLES <b>On</b>';
                       } else {
                         row_block_interaction = false;
-                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>Off</b>';
+                        document.getElementById('rb-interaction').innerHTML = 'HIDDEN SINGLES <b>Off</b>';
                       }
-                      console.log(row_block_interaction)
+                      // console.log(row_block_interaction)
                     }
 
 

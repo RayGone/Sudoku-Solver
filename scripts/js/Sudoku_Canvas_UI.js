@@ -123,7 +123,7 @@ UI.prototype.putNumber = function(k){
   if(!this.clicked)   return
   this.cell_with_number_clicked = false;
 
-  console.log(k)
+  // console.log(k)
   zero = false
   if(k===0){
     zero = true
@@ -307,6 +307,16 @@ UI.prototype.clearCurrentSudoku = function(){
 //----------------
 //---------------
 //--------------
+UI.prototype.show_choice_on_board = function(pos,val,tcolor){
+  i = pos[1] * this.cell_size + Math.floor(this.cell_size/2)
+  j = pos[0] * this.cell_size + Math.floor(this.cell_size/2) + Math.floor(this.cell_size/4.5)
+  fontsize = Math.floor(this.cell_size/2)
+  this.ctx.font = fontsize+"px Verdana";
+  // Fill with gradient
+  this.ctx.textAlign = "center";
+  this.ctx.fillStyle = tcolor;
+  this.ctx.fillText(val, i, j);  
+}
 
 UI.prototype.show_on_board = function(pos,array){
   
@@ -320,6 +330,9 @@ UI.prototype.show_on_board = function(pos,array){
   string = '';
 
   fontsize =  Math.floor(sudoku_ui.cell_size/3)-10
+
+  temp = array.sort((a,b)=>a-b).reverse();
+  array = temp;
 
   this.ctx.font = fontsize+"px Verdana";
   for(level=0;level<levels;level++){
@@ -562,7 +575,7 @@ animate_search_for_min_curr = function(){
     var curr_pos = counterToPos(search_for_min_pos);
     
     if(complete_trace['choice_trace'][solutionTraceAnimation_counter]['propagation']==='backward'){      
-      solutionTraceAnimation_interval_id = setInterval(solutionTraceBackward,300);
+      solutionTraceAnimation_interval_id = setTimeout(solutionTraceBackward,300);
       return;
     }
     // console.log('positions: ',curr_pos,pos,JSON.stringify(pos),JSON.stringify(curr_pos))
@@ -634,16 +647,8 @@ solutionTraceForward = function(){
         var value = status['value']
         if (status['propagation'] === 'forward') {
           //code here
-          sudoku_ui.ctx.fillStyle = '#1aff1a'
-          sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
-          i = pos[1] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2)
-          j = pos[0] * sudoku_ui.cell_size + Math.floor(sudoku_ui.cell_size/2) + Math.floor(sudoku_ui.cell_size/4.5)
-          fontsize = Math.floor(sudoku_ui.cell_size/2)
-          sudoku_ui.ctx.font = fontsize+"px Verdana";
-          // Fill with gradient
-          sudoku_ui.ctx.textAlign = "center";
-          sudoku_ui.ctx.fillStyle = 'black';
-          sudoku_ui.ctx.fillText(value, i, j);          
+          colorCell(pos,'#1aff1a')
+          sudoku_ui.show_choice_on_board(pos,value,'black')  
           
           // console.log(peers[i][j])
           row = row_unit[peers[pos[0]][pos[1]][0]]
@@ -667,7 +672,7 @@ solutionTraceForward = function(){
         } else { //if propagation is backward
           clearInterval(solutionTraceAnimation_interval_id);
           interval = 200;
-          solutionTraceAnimation_interval_id = setInterval(solutionTraceBackward,interval);
+          solutionTraceAnimation_interval_id = setInterval(animate_search_for_min_curr,interval);
           return;
         }
   }
@@ -684,68 +689,52 @@ solutionTraceForward = function(){
 }
 
 solutionTraceBackward = function(){
+  // console.log('backward');  
+  if(solutionTraceAnimation_counter < complete_trace['choice_trace'].length && complete_trace['choice_trace'][solutionTraceAnimation_counter]['propagation'] === 'backward'){
+    cstatus = complete_trace['choice_trace'][solutionTraceAnimation_counter];
+    bstatus = complete_trace['propagation_trace'][solutionTraceAnimation_counter];
 
-  if(solutionTraceAnimation_counter < complete_trace['choice_trace'].length){
-    var status = complete_trace['choice_trace'][solutionTraceAnimation_counter]
-    console.log('solutionTraceBackward: ',status,complete_trace['propagation_trace'][solutionTraceAnimation_counter])
-    var pos  = status['pos']
-    // var value = status['value']
-    if (status['propagation'] === 'backward') {
-      solutionTraceBackward_trace_array.push(pos);
-      //code here
-      sudoku_ui.ctx.fillStyle = '#b30000'
-      sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
-      // Fill with gradient
-      sudoku_ui.ctx.fillStyle = 'white';
-      sudoku_ui.show_on_board(pos,sudoku_ui.domain[pos[0]][pos[1]])
-      row = row_unit[peers[pos[0]][pos[1]][0]]
-      col = col_unit[peers[pos[0]][pos[1]][1]]
-      box = box_unit[peers[pos[0]][pos[1]][2]]
+    solutionTraceAnimation_counter++;
 
-      // console.log('loopo',peers[i][j])
-      setTimeout(colorUNIT,50,pos,row,false);
-      setTimeout(colorUNIT,50,pos,col,false);
-      setTimeout(colorUNIT,50,pos,box,false);
+    cpos = cstatus['pos'];
+    cvalue = cstatus['value'];
 
-      setTimeout(function(counter){
-        var status = complete_trace['propagation_trace'][counter];
-        for(x in status){
-          sudoku_ui.domain[status[x]['pos'][0]][status[x]['pos'][0]].unshift(status[x]['value']);
-          sudoku_ui.show_on_board([status[x]['pos'][0]][status[x]['pos'][0]],sudoku_ui.domain[status[x]['pos'][0]][status[x]['pos'][0]])
-        }
-      },155,solutionTraceAnimation_counter);
-      
-      solutionTraceAnimation_counter++;
-    } else { //if propagation is forward
-      backpropagationCounter = 1;
-      clearInterval(solutionTraceAnimation_interval_id);
-      solutionTraceAnimation_interval_id = setInterval(function(){
-          if(solutionTraceBackward_trace_array.length>0){
-            pos = solutionTraceBackward_trace_array.pop();
-            //code here
-            sudoku_ui.ctx.fillStyle = 'white'
-            sudoku_ui.ctx.fillRect((pos[1]*sudoku_ui.cell_size)+4,(pos[0]*sudoku_ui.cell_size)+4,sudoku_ui.cell_size-6,sudoku_ui.cell_size-7)
-            sudoku_ui.show_on_board(pos,sudoku_ui.domain[pos[0]][pos[1]])
-          } else {
-              //------
-              solutionTraceAnimation_interval_id = setInterval(animate_search_for_min_curr,200);
-          }
-      },100);
-      return;
+    colorCell(cpos,'#b30000');
+    sudoku_ui.show_choice_on_board(cpos,sudoku_ui.sudoku[cpos[0]][cpos[1]],'white') 
+
+    sudoku_ui.sudoku[cpos[0]][cpos[1]] = 0;
+    // console.log(sudoku_ui.domain[cpos[0]][cpos[1]]);
+
+    // console.log(JSON.stringify(bstatus));
+    for(x in bstatus){
+      pos = bstatus[x]['pos']
+      value = bstatus[x]['value']
+
+      if(sudoku_ui.sudoku[pos[0]][pos[1]] == 0){
+        colorCell(pos,'#d9771c');
+        sudoku_ui.show_on_board(pos,sudoku_ui.domain[pos[0]][pos[1]])
+
+        sudoku_ui.domain[pos[0]][pos[1]].unshift(value);
+
+        setTimeout(function(p){
+          colorCell(p,'#fff');
+          sudoku_ui.show_on_board(p,sudoku_ui.domain[p[0]][p[1]])
+        },400,pos);
+      }      
     }
-  }
+
+    setTimeout(function(p){
+      colorCell(p,'#fff');
+      sudoku_ui.show_on_board(p,sudoku_ui.domain[p[0]][p[1]])
+    },400,cpos);
+
+    setTimeout(solutionTraceBackward,500);
+  } 
   else {
-      // console.log('cleared')
-      clearInterval(solutionTraceAnimation_interval_id);
-      console.log('DisplayTrace exited')
-      
-      sudoku_ui.cns.parentNode.classList.add("col-md-4")
-      sudoku_ui.cns.parentNode.classList.remove("col-md-12")
-      sudoku_ui.changeSizeOfBoard(300);
-      sudoku_ui.drawSudokuBoard();
-      sudoku_ui.writeSolutionOnBoard()
+    setTimeout(animate_search_for_min_curr,500)
   }
 }
+
 
 function windowKeyEventHandler(evt){
   keyCode = evt.keyCode
