@@ -22,9 +22,10 @@ function getSudoku(index){
 
 function run_tests(){
   var xhttp = new XMLHttpRequest();
+  index = sudoku_index;
   xhttp.onreadystatechange = function() {
      if (this.readyState == 4 && this.status == 200) {
-
+       if(index == 0) console.log(this.responseText);
        sudoku_grid = JSON.parse(this.responseText);
        if(show_on_board){
           sudoku_ui.writeInputOnBoard(sudoku_grid);

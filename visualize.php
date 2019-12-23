@@ -97,13 +97,14 @@
               <input type="checkbox" onchange='dothisRandomize(this)'>
               <span class="slider round"></span>
             </label>
-            &nbsp;&nbsp;<span id='randomize-toggle' style='padding-right:10px;border-right:solid 1px black;border-top:solid 1px black'>Randomization <b>Off</b></span>
+            &nbsp;&nbsp;<span id='randomize-toggle' style='padding-right:10px;border-right:solid 1px black;border-top:solid 1px black'>RANDOMIZATION <b>Off</b></span>
             <label class="switch">
               <input type="checkbox" onchange='dothisRB(this)'>
               <span class="slider round"></span>
             </label>
             <a id=link style='display:none' target='_blank'></a>
-            &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>Row-block Interaction <b>Off</b></span>
+            &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>HIDDEN SINGLES <b>Off</b></span>
+            
             <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
               <div id='col1' class='col-md-4' style='background-color:#555555;padding:5px'>
                 <canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas>
@@ -234,7 +235,8 @@
                     }
 
                     document.getElementById('clear').addEventListener('click',function() {
-                      sudoku_ui.clearCurrentSudoku();
+                      sudoku_ui.clearCurrentSudoku();                      
+                      clearPreviousSolution()
                       document.getElementById('demo-list').classList.add('hide');
                       document.getElementById('test').classList.remove('hide');
                       document.getElementById('solve').classList.add('hide');
@@ -322,7 +324,7 @@
 
 
                     function writeSolutionTraceToFile(){
-                      console.log(complete_trace['choice_trace']);
+                      console.log(complete_trace);
                       console.log(input_sudoku);
                       console.log(constraint_after_initial_propagation)
                     }

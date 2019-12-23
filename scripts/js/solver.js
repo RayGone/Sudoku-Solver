@@ -80,6 +80,7 @@ function useDemoInput(number) {
 
     switch(number){
       case 1:
+        // sudoku_grid = [[4,0,0,0,0,0,8,0,5],[0,3,0,0,0,0,0,0,0],[0,0,0,7,0,0,0,0,0],[0,2,0,0,0,0,0,6,0],[0,0,0,0,8,0,4,0,0],[0,0,0,0,1,0,0,0,0],[0,0,0,6,0,3,0,7,0],[5,0,0,2,0,0,0,0,0],[1,0,4,0,0,0,0,0,0]]
         sudoku_grid = [[0,0,0,0,0,0,8,0,1],[6,0,0,2,0,0,0,0,0],[0,0,0,7,0,5,0,0,0],[0,0,0,6,0,0,0,2,0],[0,1,0,0,0,0,3,0,0],[0,8,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,7,0],[0,3,0,0,8,0,0,0,0],[5,0,0,0,4,0,0,0,0]]; // sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
         // sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
         // sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
@@ -420,7 +421,8 @@ function backwardPropagation() {
 
     //------
     var ptrace = propagation_trace.pop();
-
+    // console.log(ptrace);
+    complete_trace['propagation_trace'].push(ptrace);
     for (var x in ptrace) {
         var traceX = ptrace[x];
         var i = traceX['pos'][0];
@@ -447,34 +449,14 @@ function minimumConstraint() { // searches for cell with minimum choices left
                 min_pos.push([i, j]);
             }
 
-            else; //do nothing
-        }
-    }
-    // console.log('-----------------')
-    temp_min_pos = []
-    if(min_val < 4 && min_val>0 && min_pos.length>2){
-      for(x in min_pos){
-        for(y=x;y<min_pos.length;y++){
-          if(x!=y){
-            i1 = min_pos[x][0];
-            j1 = min_pos[x][1];
-            i2 = min_pos[y][0];
-            j2 = min_pos[y][1];
-            if(JSON.stringify(constraint[i1][j1].sort(function(a,b){return b-a}))==JSON.stringify(constraint[i2][j2].sort(function(a,b){return b-a}))) {//if the contents of constraint are same
-              if(i1==i2 || j2==j2 || box_unit_index_from_cell_pos(i1,j1)==box_unit_index_from_cell_pos(i2,j2)){// row or column or box
-                temp_min_pos.push([i1,j1])
-                temp_min_pos.push([i2,j2])
+            else{
+              if(constraint[i][j].length == 1 && sudoku_grid[i][j] == 0){
+                return false;
               }
             }
-          }
         }
-        // console.log(JSON.stringify(constraint[min_pos[x][0]][min_pos[x][1]]));
-      }
-      if(temp_min_pos.length>0) min_pos = [... new Set(temp_min_pos)]
     }
-    // console.log(JSON.stringify(min_pos))
-    // console.log('----/-------/------')
-    return [min_pos[0]];
+    return min_pos;
 }
 
 var g_counter = 0;
@@ -557,10 +539,15 @@ function RBinteraction(){
     for(j=0;j<9;j++){//in each cell in sudoku grid
       if(constraint[i][j].length>2){//if there is more than 1 constraint
         for(k=0;k<constraint[i][j].length-1;k++){//for each constraint, check if it is unique
-          row_flag = check_through_row_unit(i,j,constraint[i][j][k])
-          box_flag = check_through_box_unit(i,j,constraint[i][j][k])
-          if(row_flag && box_flag){
+          flag = 0;
+          if(check_through_row_unit(i,j,constraint[i][j][k])) flag++
+          if(check_through_box_unit(i,j,constraint[i][j][k])) flag++
+          if(check_through_column_unit(i,j,constraint[i][j][k])) flag++
+          
+          if(flag>1){
+            flag = false
             // console.log(i,j,JSON.stringify(constraint[i][j]),constraint[i][j][k])
+            // console.log('rb')
             sudoku_grid[i][j] = constraint[i][j][k];
             forwardPropagation(i, j, constraint[i][j][k]);
             rb_trace.push({'pos':[i,j],'value':constraint[i][j][k]});
@@ -572,26 +559,6 @@ function RBinteraction(){
   return rb_trace;
 }
 
-function CBinteraction(){
-  cb_trace = [];
-  for(i=0;i<9;i++){
-    for(j=0;j<9;j++){//in each cell in sudoku grid
-      if(constraint[i][j].length>2){//if there is more than 1 constraint
-        for(k=0;k<constraint[i][j].length-1;k++){//for each constraint, check if it is unique
-          row_flag = check_through_column_unit(i,j,constraint[i][j][k])
-          box_flag = check_through_box_unit(i,j,constraint[i][j][k])
-          if(row_flag && box_flag){
-            // console.log(i,j,JSON.stringify(constraint[i][j]),constraint[i][j][k])
-            sudoku_grid[i][j] = constraint[i][j][k];
-            forwardPropagation(i, j, constraint[i][j][k]);
-            cb_trace.push({'pos':[i,j],'value':constraint[i][j][k]});
-          }
-        }
-      }
-    }
-  }
-  return cb_trace;
-}
 
 flag_one = true;
 function solutionFinder() {
@@ -600,9 +567,12 @@ function solutionFinder() {
         displaySudokuInConsole();
     }
     var min_list = minimumConstraint();
+    // console.log(constraint,min_list)
+    if(!min_list) min_list = [];
     var selected_min;
     var min_pos;
     counter = min_list.length;
+
     while(counter>0){
       counter--;
       if (min_list.length > 1) {
@@ -616,8 +586,9 @@ function solutionFinder() {
         }
       }
       else{
-         min_pos = min_list[0];
-         min_list.splice(0,1);
+        // if(min_list.length == 1) return false;
+        min_pos = min_list[0];
+        min_list.splice(0,1);
       }
 
       if (!Array.isArray(min_pos)) return false;
@@ -640,10 +611,10 @@ function solutionFinder() {
         }
 
         if(flag_one){
-          console.log('flag one')
+          // console.log('flag one')
           //there is no way to backpropagate, so this can be the safest way to do it
           rb_trace = RBinteraction();
-          cb_trace = CBinteraction();
+          // cb_trace = CBinteraction();
         }
       }
 
@@ -703,13 +674,15 @@ function solutionFinder() {
               displaySudokuInConsole();
           }
       }
-      for(x in cb_trace){
-        i = cb_trace[x]['pos'][0]
-        j = cb_trace[x]['pos'][1]
-        updateSudoku_grid(i,j,0);
-        constraint[pos[0]][pos[1]].unshift(cb_trace[x]['value']);
-        backwardPropagation();
-      }
+      // ------------------------------------------
+      // for(x in cb_trace){
+      //   i = cb_trace[x]['pos'][0]
+      //   j = cb_trace[x]['pos'][1]
+      //   updateSudoku_grid(i,j,0);
+      //   constraint[pos[0]][pos[1]].unshift(cb_trace[x]['value']);
+      //   backwardPropagation();
+      // }
+      // -------------------------------------------
       for(x in rb_trace){
         i = rb_trace[x]['pos'][0]
         j = rb_trace[x]['pos'][1]
@@ -718,7 +691,9 @@ function solutionFinder() {
         backwardPropagation();
       }
     }
-    return false; //all the possible choices are exhausted and still no solution is found
+    //either all the possible choices are exhausted and still no solution is found
+    //or one the domain has become empty during search because of constraint propagation.
+    return false; 
 
 }
 
@@ -903,7 +878,7 @@ function solve() {
     initializeConstraint();
     if(row_block_interaction){
       RBinteraction();
-      CBinteraction();
+      // CBinteraction();
     }
     // return false;
     if (debug) {
@@ -939,3 +914,112 @@ function solve() {
 //console.log(JSON.stringify(constraint));
 
 //tests
+
+
+
+
+/*
+//--------------------- Removed Functions --------------------
+
+Making a copy of minimumConstraint
+special case below didn't reduce the runtime of the algorithm to solution
+nor the number of steps the algorithm took to find the solution was reduced
+
+function minimumConstraint() { // searches for cell with minimum choices left
+  var min_val = 9;
+  var min_pos = [];
+  for (var i = 0; i < 9; i++) {
+      for (var j = 0; j < 9; j++) {
+          if (constraint[i][j].length - 1 < min_val && constraint[i][j].length > 1 && sudoku_grid[i][j] == 0) {
+              min_val = constraint[i][j].length - 1; // because each cell has one extra value at the end in constraint indicating whether its input or not
+              min_pos = [];
+              min_pos.push([i, j]);
+          }
+
+          else if (constraint[i][j].length - 1 == min_val && sudoku_grid[i][j] == 0) {
+              min_pos.push([i, j]);
+          }
+
+          else{
+            if(constraint[i][j].length == 1 && sudoku_grid[i][j] == 0){
+              return false;
+            }
+          }
+      }
+  }
+  return min_pos;
+  // console.log('-----------------')
+  temp_min_pos = []
+  /*  
+    this if block is for special case lookup.
+    What we are doing here is searching for a list of variables with same domains and
+    are within same row||column||block. Domain of variable must have more than 1 value.
+    This we do for constraint programming which in sudoku language is called
+    'Naked Double', 'Naked Triple',etc.
+    i.e. this is a sort of variable selection heuristics
+  *
+
+  if(min_val < 4 && min_val > 0 && min_pos.length > 2){
+    for(x in min_pos){
+      for(y=x;y<min_pos.length;y++){
+        if(x!=y){
+          i1 = min_pos[x][0];
+          j1 = min_pos[x][1];
+          i2 = min_pos[y][0];
+          j2 = min_pos[y][1];
+          //if the contents of constraint are same
+          if(JSON.stringify(constraint[i1][j1].sort(function(a,b){return b-a}))==JSON.stringify(constraint[i2][j2].sort(function(a,b){return b-a}))) {              
+            if(i1==i2 || j1==j2){
+              // temp_min_pos.push([i1,j1]);
+              continue;
+              //this case shouldn't be possible, but still its here
+            }
+            else if(peers[i1][j1][0]===peers[i2][j2][0]){ // same row
+              temp_min_pos.push([i1,j1])
+              temp_min_pos.push([i2,j2])
+            }
+            else if(peers[i1][j1][1]===peers[i2][j2][1]){ // same column
+              temp_min_pos.push([i1,j1])
+              temp_min_pos.push([i2,j2])
+            }
+            else if(peers[i1][j1][2]===peers[i2][j2][2]){ // same block
+              temp_min_pos.push([i1,j1])
+              temp_min_pos.push([i2,j2])
+            }
+            else{ continue; }
+          }
+        }
+      }
+      // console.log(JSON.stringify(constraint[min_pos[x][0]][min_pos[x][1]]));
+    }
+    if(temp_min_pos.length>0) min_pos = [... new Set(temp_min_pos)]
+  }
+  // console.log(JSON.stringify(min_pos))
+  // console.log('----/-------/------')
+  return min_pos;//[min_pos[0]];
+}
+
+
+// function CBinteraction(){
+//   cb_trace = [];
+//   for(i=0;i<9;i++){
+//     for(j=0;j<9;j++){//in each cell in sudoku grid
+//       if(constraint[i][j].length>2){//if there is more than 1 constraint
+//         for(k=0;k<constraint[i][j].length-1;k++){//for each constraint, check if it is unique
+//           col_flag = check_through_column_unit(i,j,constraint[i][j][k])
+//           box_flag = check_through_box_unit(i,j,constraint[i][j][k])
+//           if(col_flag && box_flag){
+//             console.log('cb')
+//             // console.log(i,j,JSON.stringify(constraint[i][j]),constraint[i][j][k])
+//             sudoku_grid[i][j] = constraint[i][j][k];
+//             forwardPropagation(i, j, constraint[i][j][k]);
+//             cb_trace.push({'pos':[i,j],'value':constraint[i][j][k]});
+//           }
+//         }
+//       }
+//     }
+//   }
+//   return cb_trace;
+// }
+
+*/
