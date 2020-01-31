@@ -81,16 +81,29 @@ function useDemoInput(number) {
     switch(number){
       case 1:
         // sudoku_grid = [[4,0,0,0,0,0,8,0,5],[0,3,0,0,0,0,0,0,0],[0,0,0,7,0,0,0,0,0],[0,2,0,0,0,0,0,6,0],[0,0,0,0,8,0,4,0,0],[0,0,0,0,1,0,0,0,0],[0,0,0,6,0,3,0,7,0],[5,0,0,2,0,0,0,0,0],[1,0,4,0,0,0,0,0,0]]
-        sudoku_grid = [[0,0,0,0,0,0,8,0,1],[6,0,0,2,0,0,0,0,0],[0,0,0,7,0,5,0,0,0],[0,0,0,6,0,0,0,2,0],[0,1,0,0,0,0,3,0,0],[0,8,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,7,0],[0,3,0,0,8,0,0,0,0],[5,0,0,0,4,0,0,0,0]]; // sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
-        // sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
-        // sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
-        // sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
-        // sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        // sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
-        // sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
-        // sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
-        // sudoku_grid.push([0, 0, 0, 7, 0, 6, 0, 9, 0]);
+        sudoku_grid = [[0,0,0,0,0,0,8,0,1],[6,0,0,2,0,0,0,0,0],[0,0,0,7,0,5,0,0,0],[0,0,0,6,0,0,0,2,0],[0,1,0,0,0,0,3,0,0],[0,8,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,7,0],[0,3,0,0,8,0,0,0,0],[5,0,0,0,4,0,0,0,0]]; 
         break;
+      
+      case 8:
+        sudoku_grid.push([0, 1, 0, 4, 0, 9, 0, 0, 0]);
+        sudoku_grid.push([0, 0, 4, 0, 0, 0, 3, 0, 5]);
+        sudoku_grid.push([0, 8, 0, 3, 0, 0, 0, 7, 0]);
+        sudoku_grid.push([3, 0, 0, 6, 0, 7, 1, 0, 9]);
+        sudoku_grid.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        sudoku_grid.push([6, 0, 9, 5, 0, 3, 0, 0, 2]);
+        sudoku_grid.push([0, 7, 0, 0, 0, 5, 0, 6, 0]);
+        sudoku_grid.push([9, 0, 5, 0, 0, 0, 4, 0, 0]);
+        sudoku_grid.push([0, 0, 0, 7, 0, 6, 0, 9, 0]);
+        break;
+
+      case 9:
+        sudoku_grid = [[0,0,0,0,0,6,0,0,0],[0,5,9,0,0,0,0,0,8],[2,0,0,0,0,8,0,0,0],[0,4,5,0,0,0,0,0,0],[0,0,3,0,0,0,0,0,0],[0,0,6,0,0,3,0,5,4],[0,0,0,3,2,5,0,0,6],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+        break;
+
+      case 10:
+        sudoku_grid = [[0,0,0,0,0,5,0,8,0],[0,0,0,,6,0,1 ,0,4,3],[0,0,0,0,0,0,0,0,0],[0,1,0,5,0,0,0,0,0],[0,0,0,1,0,6 ,0,0,0],[3,0,0,,0,0,0,0,0,5],[5,3,0,0,0,0,0,6,1],[0,0,0,0,0,0,0,0,4],[0,0,0,0,0,0,0,0,0 ]];
+        break;
+
       case 2:
         sudoku_grid.push([0,3,0,4,8,0,6,0,9]);
         sudoku_grid.push([0,0,0,0,2,7,0,0,0]);
@@ -135,6 +148,7 @@ function useDemoInput(number) {
         sudoku_grid.push([0,0,1,0,4,0,5,0,0]);
         sudoku_grid.push([7,0,0,0,9,0,0,0,4]);
         break;
+
       case 6:
         sudoku_grid.push([2,0,0,0,0,6,0,0,1]);
         sudoku_grid.push([0,0,9,4,0,1,0,0,0]);
@@ -146,6 +160,7 @@ function useDemoInput(number) {
         sudoku_grid.push([0,0,0,3,0,9,2,0,0]);
         sudoku_grid.push([8,0,0,6,0,0,0,0,4]);
       break;
+
       default:
         sudoku_grid.push([7,0,0,0,5,0,0,9,0]);
         sudoku_grid.push([0,0,0,8,9,0,0,0,0]);
@@ -663,6 +678,8 @@ function solutionFinder() {
           if (!Array.isArray(pos)) return;
           sudoku_grid[pos[0]][pos[1]] = 0; //emptying the cell
           constraint[pos[0]][pos[1]].unshift(value);
+          //should check cns and constraint once. redundant constraint possible because of unshift operation.
+          
           // var t = constraint[pos[0]][pos[1]].pop(); // because last element is a flag that determines if its a input or not
           // constraint[pos[0]][pos[1]].push(value); // inserting value to the end of the constraint because it is unlikely the result
           // constraint[pos[0]][pos[1]].push(t); // inserting the flag

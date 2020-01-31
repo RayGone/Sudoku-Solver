@@ -115,7 +115,10 @@
                   <div class='butn' id='run_test'>run test</div>
                   <div class='butn' id='test'>use demo input</div>
                   <div id='demo-list' class='hide'>
-                    <div class='butn' onclick='initializeDemo(1)'>Demo 1</div>
+                    <div class='butn' onclick='initializeDemo(1)'>Hard Puzzle</div>
+                    <div class='butn' onclick='initializeDemo(9)'>Hardest</div>
+                    <div class='butn' onclick='initializeDemo(10)'>Impossible</div>
+                    <div class='butn' onclick='initializeDemo(8)'>Demo 1</div>
                     <div class='butn' onclick='initializeDemo(2)'>Demo 2</div>
                     <div class='butn' onclick='initializeDemo(3)'>Demo 3</div>
                     <div class='butn' onclick='initializeDemo(4)'>Demo 4</div>
@@ -244,13 +247,16 @@
                       document.getElementById('trace').classList.add('hide');
                     });
 
-                    document.getElementById('solve').addEventListener('click',function(){
+                    document.getElementById('solve').addEventListener('click',function(){                      
+                      var startDate = new Date(); 
                       if(solve()){
-                         document.getElementById('msg').innerHTML = "A Solution is found.<br>Total Steps to Solution: "+steps_counter+"<br>No.of backtracks: "+backtrack_counter;
-                         document.getElementById('msg').style.display = '';
-                         document.getElementById('trace').classList.remove('hide');
-                         document.getElementById('solve').classList.add('hide');
-                         writeSolutionTraceToFile();
+                        var endDate   = new Date();
+                        var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+                        document.getElementById('msg').innerHTML = "A Solution is found.<br>Total Steps to Solution: "+steps_counter+"<br>No.of backtracks: "+backtrack_counter+"<br>Time Taken: "+seconds+"s";
+                        document.getElementById('msg').style.display = '';
+                        document.getElementById('trace').classList.remove('hide');
+                        document.getElementById('solve').classList.add('hide');
+                        writeSolutionTraceToFile();
                       }
                       sudoku_ui.writeSolutionOnBoard();
                     });
