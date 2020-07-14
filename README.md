@@ -2,7 +2,7 @@
 #This is an implementation of constraint propagation algorithm for sudoku solving.
 #This is completely implemented on core javascript
 
-### You can simply change the file extension of index.php to index.html because there's no php used in this project
+### You can simply change the file extension of index.php to index.html because there's no php(edit: php is used in one case) used in this project
 ### getSudoku.js is supposed to be a Sudoku generator but it is not implemented
 
 ##### Lists of variables
