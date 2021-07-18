@@ -1,9 +1,11 @@
 # Sudoku-Solver
-#This is an implementation of constraint propagation algorithm for sudoku solving.
-#This is completely implemented on core javascript
---currently working branch is 'third' branch and 'working-branch' where the latter is branched out from 'third'
+#This is an implementation of constraint propagation algorithm for sudoku solving.<br>
+#This is completely implemented on core javascript<br>
+--currently working branch is 'third' branch and 'working-branch' where the latter is branched out from 'third'<br>
+--branch 'fourth' and 'fifth' has been deleted and 'sixth' is kept as remnant of works done in those two branch
 
-### You can simply change the file extension of index.php to index.html because there's no php(edit: php is used in one case) used in this project
+### You can simply change the file extension of index.php to index.html because there's no php used in this project
+#### Edit: to run test (which processes sudoku in top95.txt and gives max, min and avg stats) a php server needs to be run on the root folder
 ### getSudoku.js is supposed to be a Sudoku generator but it is not implemented
 
 ##### Lists of variables
