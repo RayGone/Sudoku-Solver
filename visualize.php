@@ -97,43 +97,44 @@
               <input type="checkbox" onchange='dothisRandomize(this)'>
               <span class="slider round"></span>
             </label>
-            &nbsp;&nbsp;<span id='randomize-toggle' style='padding-right:10px;border-right:solid 1px black;border-top:solid 1px black'>Randomization <b>Off</b></span>
+            &nbsp;&nbsp;<span id='randomize-toggle' style='padding-right:10px;border-right:solid 1px black;border-top:solid 1px black'>RANDOMIZATION <b>Off</b></span>
             <label class="switch">
               <input type="checkbox" onchange='dothisRB(this)'>
               <span class="slider round"></span>
             </label>
             <a id=link style='display:none' target='_blank'></a>
-            &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>Row-block Interaction <b>Off</b></span>
+            &nbsp;&nbsp;<span id='rb-interaction'  style='padding-right:10px;border-right:solid 1px black;border-bottom:solid 1px black'>HIDDEN SINGLES <b>Off</b></span>
+            
             <div id='main-row' class='row' style='border-style:inset ;padding:10px;margin:2px;  box-shadow:10px 10px 5px black;'>
-                <div id='col1' class='col-md-4' style='background-color:#555555;padding:5px'>
-                  <canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas>
-                </div>
-                <div id='col2' class='col-md-8' style='display:none'></div>
-                <div id='col3' class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
-                    <div class='butn hide' id='userInput'>validate Input</div>
-                    <div class='butn' id='run_test'>run test</div>
-                    <div class='butn' id='test'>use demo input</div>
-                    <div id='demo-list' class='hide'>
-                      <div class='butn' onclick='initializeDemo(1)'>Demo 1</div>
-                      <div class='butn' onclick='initializeDemo(2)'>Demo 2</div>
-                      <div class='butn' onclick='initializeDemo(3)'>Demo 3</div>
-                      <div class='butn' onclick='initializeDemo(4)'>Demo 4</div>
-                      <div class='butn' onclick='initializeDemo(5)'>Demo 5</div>
-                      <div class='butn' onclick='initializeDemo(6)'>Demo 6</div>
-                      <div class='butn' onclick='initializeDemo(7)'>Demo 7</div>
-                    </div>
-                    <div class='butn' id='clear'>Clear</div>
-                    <div class='butn hide' id='solve'>Solve</div>
-                    <div class='butn hide' id='trace'>Trace Solution Stack</div>
-                      <!-- <button id="test" onclick=''>Use test sudoku</button><br><br>
-                      <button id="solve" onclick='solve(); info();'>solve</button><br><br>
-                      <button id="trace" style="display:none" onclick='DisplayTrace();'>Trace</button>
-                      <div class="alert alert-info" style="display:none" id="info">We found a solution. Click on trace.</div> -->
-                </div>
-                <div id='col4' class='col-md-6' style='background-color:#888888;'>
-                  <p id='msg' style='display:none' class='alert alert-info'></p>
-                  <p id='error'  style='display:none' class='alert alert-danger'></p>
-                </div>
+              <div id='col1' class='col-md-4' style='background-color:#555555;padding:5px'>
+                <canvas style='border:3px solid black;padding:10px;box-shadow:3px 3px 4px 5px #a0a0a0' id='canvas-ui' width=600 height=500></canvas>
+              </div>
+              <div id='col2' class='col-md-8' style='display:none;background-color:#888;border:1px solid black'></div>
+              <div id='col3' class='col-md-2' style='background-color:#666666;border-left:1px solid white; border-right:1px solid white;padding-top:5px;padding-bottom:5px;'>
+                  <div class='butn hide' id='userInput'>validate Input</div>
+                  <div class='butn' id='run_test'>run test</div>
+                  <div class='butn' id='test'>use demo input</div>
+                  <div id='demo-list' class='hide'>
+                    <div class='butn' onclick='initializeDemo(1)'>Demo 1</div>
+                    <div class='butn' onclick='initializeDemo(2)'>Demo 2</div>
+                    <div class='butn' onclick='initializeDemo(3)'>Demo 3</div>
+                    <div class='butn' onclick='initializeDemo(4)'>Demo 4</div>
+                    <div class='butn' onclick='initializeDemo(5)'>Demo 5</div>
+                    <div class='butn' onclick='initializeDemo(6)'>Demo 6</div>
+                    <div class='butn' onclick='initializeDemo(7)'>Demo 7</div>
+                  </div>
+                  <div class='butn' id='clear'>Clear</div>
+                  <div class='butn hide' id='solve'>Solve</div>
+                  <div class='butn hide' id='trace'>Trace Solution Stack</div>
+                    <!-- <button id="test" onclick=''>Use test sudoku</button><br><br>
+                    <button id="solve" onclick='solve(); info();'>solve</button><br><br>
+                    <button id="trace" style="display:none" onclick='DisplayTrace();'>Trace</button>
+                    <div class="alert alert-info" style="display:none" id="info">We found a solution. Click on trace.</div> -->
+              </div>
+              <div id='col4' class='col-md-6' style='background-color:#888888;'>
+                <p id='msg' style='display:none' class='alert alert-info'></p>
+                <p id='error'  style='display:none' class='alert alert-danger'></p>
+              </div>
             </div>
           </div>
               <br />
@@ -227,10 +228,15 @@
                       document.getElementById('userInput').classList.add('hide');
                       document.getElementById('demo-list').classList.add('hide')
                       document.getElementById('test').classList.remove('hide')
+                      initializeConstraint();
+                      constraint_after_initial_propagation = [... constraint];
+                      // console.log(constraint_after_initial_propagation);
+                      constraint = [[], [], [], [], [], [], [], [], []];
                     }
 
                     document.getElementById('clear').addEventListener('click',function() {
-                      sudoku_ui.clearCurrentSudoku();
+                      sudoku_ui.clearCurrentSudoku();                      
+                      clearPreviousSolution()
                       document.getElementById('demo-list').classList.add('hide');
                       document.getElementById('test').classList.remove('hide');
                       document.getElementById('solve').classList.add('hide');
@@ -244,6 +250,7 @@
                          document.getElementById('msg').style.display = '';
                          document.getElementById('trace').classList.remove('hide');
                          document.getElementById('solve').classList.add('hide');
+                         writeSolutionTraceToFile();
                       }
                       sudoku_ui.writeSolutionOnBoard();
                     });
@@ -263,7 +270,6 @@
                     });
 
                     document.getElementById('trace').addEventListener('click',function(){
-                      sudoku_ui.writeInputOnBoard(input_sudoku);
                       solutionTraceAnimation();
                     });
 
@@ -297,25 +303,31 @@
                     function dothisRandomize(checkbox){
                       if(checkbox.checked){
                         random = true;
-                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>On</b>';
+                        document.getElementById('randomize-toggle').innerHTML = 'RANDOMIZATION <b>On</b>';
                       } else {
                         random = false;
-                        document.getElementById('randomize-toggle').innerHTML = 'Randomization <b>Off</b>';
+                        document.getElementById('randomize-toggle').innerHTML = 'RANDOMIZATION <b>Off</b>';
                       }
-                      console.log(random)
+                      // console.log(random)
                     }
 
                     function dothisRB(checkbox){
                       if(checkbox.checked){
                         row_block_interaction = true;
-                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>On</b>';
+                        document.getElementById('rb-interaction').innerHTML = 'HIDDEN SINGLES <b>On</b>';
                       } else {
                         row_block_interaction = false;
-                        document.getElementById('rb-interaction').innerHTML = 'Row-block Interaction <b>Off</b>';
+                        document.getElementById('rb-interaction').innerHTML = 'HIDDEN SINGLES <b>Off</b>';
                       }
-                      console.log(row_block_interaction)
+                      // console.log(row_block_interaction)
                     }
 
+
+                    function writeSolutionTraceToFile(){
+                      console.log(complete_trace);
+                      console.log(input_sudoku);
+                      console.log(constraint_after_initial_propagation)
+                    }
             </script>
 </body>
 </html>
